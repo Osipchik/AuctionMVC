@@ -1,0 +1,81 @@
+﻿@using Auction.DTO.Partial
+@using Auction.Services
+@model Lot
+
+
+@{
+    ViewBag.Title = "Lot";
+}
+
+<link rel="stylesheet" href="~/css/create.css"/>
+
+@{
+    await Html.RenderPartialAsync("_PageTitle", new ColDescription{
+        Title = Model.Title, 
+        Description = new List<string>
+        {Model.Description}
+    });
+}
+
+<div class="row">
+    <div class="col-lg-7 p-0">
+        <div class="image-container">
+            <img src="@Model.ImageUrl" alt="your image" class="uploader-image"/>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div>
+            @if (User.IsInRole(Constants.AdminRole) || (string) ViewData["UserId"] == Model.AppUserId)
+            {
+                <div class="row d-flex justify-content-around">
+                    <a
+                        asp-controller="Lot" asp-action="Update" asp-route-lotId="@Model.Id"
+                        role="button" class="btn btn-outline-dark btn-sm"
+                    >
+                        Update
+                    </a>
+                    <form method="post" asp-controller="Lot" asp-action="Delete" asp-route-lotId="@Model.Id" >
+                        <span id="confirmDelete" style="display: none;">
+                            <span>Are you sure you want to delete this lot?</span>
+                            <button 
+                                type="submit" class="btn btn-outline-danger btn-sm"
+                                onclick="onDelete()"
+                            >
+                                Yes
+                            </button>
+                            <button 
+                                type="button" class="btn btn-outline-primary btn-sm"
+                                onclick="dropDelete()"
+                            >
+                                No
+                            </button>
+                        </span>
+                        <span id="delete">
+                            <button 
+                                type="button" class="btn btn-outline-danger btn-sm"
+                                onclick="onDelete()"
+                            >
+                                Delete
+                            </button>
+                        </span>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        function onDelete(){
+            $('#confirmDelete').show();
+            $('#delete').hide();
+        }
+        
+        function dropDelete(){
+            $('#confirmDelete').hide();
+            $('#delete').show();
+        }
+    </script>
+}

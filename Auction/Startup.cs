@@ -75,12 +75,16 @@ namespace Auction
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute("pagination",
-                    "Auctions/Page{page}",
+                    "Auctions/Page-{page}",
                     new { Controller = "Home", action = "Index" });
                 
                 endpoints.MapControllerRoute("update",
-                    "UpdateLot/Id{lotId}",
+                    "UpdateLot/Id-{lotId}",
                     new { Controller = "Lot", action = "Update" });
+                
+                endpoints.MapControllerRoute("lot",
+                    "Lot/Id-{lotId}",
+                    new { Controller = "Lot", action = "Get" });
 
                 endpoints.MapDefaultControllerRoute();
             });

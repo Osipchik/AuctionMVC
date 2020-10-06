@@ -128,7 +128,7 @@ namespace Auction.Controllers
             lot.ImageUrl = await _cloudStorage.UploadFileAsync(image, filename);
         }
 
-        [HttpDelete]
+        [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int lotId)
@@ -145,6 +145,19 @@ namespace Auction.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Get(int lotId)
+        {
+            var lot = await _repository.Find(lotId);
+            if (lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole))
+            {
+                ViewData["UserId"] = HttpContext.UserId();
+                return View(lot);
+            }
+            
+            return RedirectToAction("Error", "Home");
+        }
+        
         // [HttpGet]
         // [Authorize]
         // public async Task<IActionResult> GetUserLots(string userId, int page = 1)

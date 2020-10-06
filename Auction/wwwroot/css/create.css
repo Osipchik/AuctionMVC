@@ -23,13 +23,17 @@
 }
 
 
-.drag-n-drop {
+
+.image-container {
     position: relative;
     z-index: 10;
     padding: 0 !important;
     padding-top: 56.25% !important;
     overflow: hidden;
+}
 
+
+.drag-n-drop {
     border: 2px dashed var(--gray);
     border-radius: 4px !important;
     cursor: pointer;

@@ -1,0 +1,9 @@
+﻿@model Auction.DTO.Partial.ColDescription
+
+<div class="col-md-5 col-sm-12">
+    <h2 class="title-small soft-black">@Model.Title</h2>
+    @foreach (var description in Model.Description)
+    {
+        <p class="text-description">@description</p>
+    }
+</div>

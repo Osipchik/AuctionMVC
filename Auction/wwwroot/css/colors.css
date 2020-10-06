@@ -1,0 +1,9 @@
+﻿:root {
+    --soft-black: #282828;
+    --grey-darker: #616161;
+    --gray: #757575;
+}
+
+.soft-black {
+    color: var(--soft-black);
+}

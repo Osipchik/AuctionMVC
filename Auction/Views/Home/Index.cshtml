@@ -1,8 +1,37 @@
-﻿@model Auction.DTO.Pagination.IndexViewModel
+﻿@using Auction.DTO.SortOptions
+@model Auction.DTO.Pagination.IndexViewModel
 
 @{
     ViewData["Title"] = "Home Page";
 }
+
+<div class="row d-flex justify-content-between px-3 mb-1">
+    <p class="font-weight-norma text-secondary">Total items: @Model.PagingInfo.TotalItems</p>
+    <form method="get" asp-controller="Home" asp-action="Index" class="form-inline px-1">
+        <div class="row filter">
+            <p class="text-muted">Showing:</p>
+            <select asp-for="SortViewModel.Show" asp-items="Html.GetEnumSelectList<Show>()" 
+                    class="form-control form-control-sm"
+                    onchange="onFilter()">
+            </select>
+        </div>
+        <div class="row filter">
+            <p class="text-muted">Category:</p>
+            <select class="form-control form-control-sm">
+                <option>any</option>
+                <option>active</option>
+                <option>sold</option>
+            </select>
+        </div>
+        <div class="row filter">
+            <p class="text-muted">SortBy:</p>
+            <select asp-for="SortViewModel.SortBy" asp-items="Html.GetEnumSelectList<SortBy>()" 
+                    class="form-control form-control-sm"
+                    onchange="onFilter()">
+            </select>
+        </div>
+    </form>
+</div>
 
 <div>
     @foreach (var i in Model.Lots)
@@ -39,3 +68,13 @@
      page-class="page-link" page-class-normal="page-item"
      page-class-selected="page-item active" class="pagination">
 </ul>
+
+
+@section Scripts
+{
+    <script>
+        function onFilter(){
+            $('.form-inline').submit();
+        }
+    </script>
+}

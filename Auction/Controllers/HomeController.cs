@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Auction.Data;
 using Auction.DTO.Pagination;
+using Auction.DTO.SortOptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Auction.Models;
@@ -23,19 +24,28 @@ namespace Auction.Controllers
             _repository = repository;
         }
         
-        public async Task<IActionResult> Index(int page = 1)
+        [HttpGet]
+        public async Task<IActionResult> Index(IndexViewModel model, int page = 1)
         {
+            var sortModel = model.SortViewModel ?? new SortViewModel(); 
+            
             var viewModel = new IndexViewModel
             {
-                Lots = await _repository.FindRange(pageSize, (page - 1) * pageSize),
+                Lots = await _repository.Order(pageSize, (page - 1) * pageSize, sortModel.SortBy, i => true),
                 PagingInfo = new PagingInfo
                 {
                     CurrentPage = page,
                     ItemsPerPage = pageSize,
                     TotalItems = await _repository.Count()
-                }
+                },
+                SortViewModel = sortModel
             };
             return View(viewModel);
+        }
+
+        private void Sort(SortBy sort)
+        {
+            
         }
 
         public IActionResult Privacy()

@@ -21,10 +21,11 @@ namespace Auction
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
-                .UseSerilog((hostingContext, loggerConfig) =>
-                {
-                    loggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
-                });
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+
+        // .UseSerilog((hostingContext, loggerConfig) =>
+        // {
+        //     loggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
+        // });
     }
 }

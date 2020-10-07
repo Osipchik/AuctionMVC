@@ -75,7 +75,7 @@ namespace Auction
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute("pagination",
-                    "Auctions/Page-{page}",
+                    "Auctions/Page-{page}/SortBy-{sortBy}/Show-{show}",
                     new { Controller = "Home", action = "Index" });
                 
                 endpoints.MapControllerRoute("update",

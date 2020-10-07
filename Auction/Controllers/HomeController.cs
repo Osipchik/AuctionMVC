@@ -25,20 +25,19 @@ namespace Auction.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> Index(IndexViewModel model, int page = 1)
+        public async Task<IActionResult> Index(SortBy sortBy, Show show, int page = 1)
         {
-            var sortModel = model.SortViewModel ?? new SortViewModel(); 
-            
             var viewModel = new IndexViewModel
             {
-                Lots = await _repository.Order(pageSize, (page - 1) * pageSize, sortModel.SortBy, i => true),
+                Lots = await _repository.Order(pageSize, (page - 1) * pageSize, sortBy, i => true),
                 PagingInfo = new PagingInfo
                 {
                     CurrentPage = page,
                     ItemsPerPage = pageSize,
                     TotalItems = await _repository.Count()
                 },
-                SortViewModel = sortModel
+                SortBy = sortBy,
+                Show = show
             };
             return View(viewModel);
         }

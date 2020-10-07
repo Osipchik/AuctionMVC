@@ -7,10 +7,10 @@
 
 <div class="row d-flex justify-content-between px-3 mb-1">
     <p class="font-weight-norma text-secondary">Total items: @Model.PagingInfo.TotalItems</p>
-    <form method="get" asp-controller="Home" asp-action="Index" class="form-inline px-1">
+    <form method="get" asp-controller="Home" asp-action="Index" asp-route-sortBy="@Model.SortBy" class="form-inline px-1">
         <div class="row filter">
             <p class="text-muted">Showing:</p>
-            <select asp-for="SortViewModel.Show" asp-items="Html.GetEnumSelectList<Show>()" 
+            <select asp-for="Show" asp-items="Html.GetEnumSelectList<Show>()" 
                     class="form-control form-control-sm"
                     onchange="onFilter()">
             </select>
@@ -25,7 +25,7 @@
         </div>
         <div class="row filter">
             <p class="text-muted">SortBy:</p>
-            <select asp-for="SortViewModel.SortBy" asp-items="Html.GetEnumSelectList<SortBy>()" 
+            <select asp-for="SortBy" asp-items="Html.GetEnumSelectList<SortBy>()" 
                     class="form-control form-control-sm"
                     onchange="onFilter()">
             </select>
@@ -64,9 +64,12 @@
     }
 </div>
 
-<ul page-model="@Model.PagingInfo" page-action="Index" page-classes-enabled="true"
-     page-class="page-link" page-class-normal="page-item"
-     page-class-selected="page-item active" class="pagination">
+<ul page-model="@Model.PagingInfo"
+    page-url-show="@Model.Show"
+    page-url-sortBy="@Model.SortBy"
+    page-action="Index" page-classes-enabled="true"
+    page-class="page-link" page-class-normal="page-item"
+    page-class-selected="page-item active" class="pagination">
 </ul>
 
 

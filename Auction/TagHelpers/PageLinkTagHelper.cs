@@ -1,5 +1,8 @@
-﻿using Auction.DTO.Pagination;
+﻿using System.Collections.Generic;
+using Auction.DTO.Pagination;
+using Auction.DTO.SortOptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -26,16 +29,22 @@ namespace Auction.TagHelpers
         public string PageClass { get; set; }
         public string PageClassNormal { get; set; }
         public string PageClassSelected { get; set; }
+        
+        [HtmlAttributeName(DictionaryAttributePrefix = "page-url-")]
+        public Dictionary<string, object> PageUrlValues { get; set; } = new Dictionary<string, object>();
 
+        
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             var urlHelper = _urlHelperFactory.GetUrlHelper(ViewContext);
             
             var result = new TagBuilder("ul");
-            for (var i = 1; i <= PageModel.TotalPages; i++) {
+            var countFrom = PageModel.CurrentPage > 6 ? PageModel.CurrentPage - 6 : 1;
+            for (var i = countFrom; i <= PageModel.CurrentPage + 6 && i <= PageModel.TotalPages; i++) {
                 var item = new TagBuilder("li");
                 var tag = new TagBuilder("a");
-                tag.Attributes["href"] = urlHelper.Action(PageAction, new { page = i });
+                PageUrlValues["page"] = i;
+                tag.Attributes["href"] = urlHelper.Action(PageAction, PageUrlValues);
                 if (PageClassesEnabled) {
                     tag.AddCssClass(PageClass);
                     item.AddCssClass(i == PageModel.CurrentPage

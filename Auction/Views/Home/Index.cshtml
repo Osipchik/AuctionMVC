@@ -7,7 +7,7 @@
 
 <div class="row d-flex justify-content-between px-3 mb-1">
     <p class="font-weight-norma text-secondary">Total items: @Model.PagingInfo.TotalItems</p>
-    <form method="get" asp-controller="Home" asp-action="Index" asp-route-sortBy="@Model.SortBy" class="form-inline px-1">
+    <form method="get" asp-controller="Home" asp-action="Index" class="form-inline px-1">
         <div class="row filter">
             <p class="text-muted">Showing:</p>
             <select asp-for="Show" asp-items="Html.GetEnumSelectList<Show>()" 

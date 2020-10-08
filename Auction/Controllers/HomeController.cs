@@ -42,11 +42,6 @@ namespace Auction.Controllers
             return View(viewModel);
         }
 
-        private void Sort(SortBy sort)
-        {
-            
-        }
-
         public IActionResult Privacy()
         {
             return View();

@@ -1,0 +1,68 @@
+2020-10-08T12:02:14.8174405+03:00 [INF] (Microsoft.Hosting.Lifetime) Now listening on: "https://localhost:5001"
+2020-10-08T12:02:14.8474507+03:00 [INF] (Microsoft.Hosting.Lifetime) Now listening on: "http://localhost:5000"
+2020-10-08T12:02:14.8479118+03:00 [INF] (Microsoft.Hosting.Lifetime) Application started. Press Ctrl+C to shut down.
+2020-10-08T12:02:14.8481800+03:00 [INF] (Microsoft.Hosting.Lifetime) Hosting environment: "Development"
+2020-10-08T12:02:14.8484406+03:00 [INF] (Microsoft.Hosting.Lifetime) Content root path: "D:\DevProjects\RiderProjects\WebApplication\AuctionMVC\Auction"
+2020-10-08T12:02:16.7724979+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Creating DbCommand for '"ExecuteNonQuery"'.
+2020-10-08T12:02:16.7798325+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Created DbCommand for '"ExecuteNonQuery"' (6ms).
+2020-10-08T12:02:16.7864888+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Executing DbCommand [Parameters=[""], CommandType='Text', CommandTimeout='30']"
+""SELECT 1"
+2020-10-08T12:02:16.8035478+03:00 [INF] (Microsoft.EntityFrameworkCore.Database.Command) Executed DbCommand ("18"ms) [Parameters=[""], CommandType='Text', CommandTimeout='30']"
+""SELECT 1"
+2020-10-08T12:02:16.8104608+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Creating DbCommand for '"ExecuteScalar"'.
+2020-10-08T12:02:16.8110204+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Created DbCommand for '"ExecuteScalar"' (0ms).
+2020-10-08T12:02:16.8124326+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Executing DbCommand [Parameters=[""], CommandType='Text', CommandTimeout='30']"
+""
+IF EXISTS
+    (SELECT *
+     FROM [sys].[objects] o
+     WHERE [o].[type] = 'U'
+     AND [o].[is_ms_shipped] = 0
+     AND NOT EXISTS (SELECT *
+         FROM [sys].[extended_properties] AS [ep]
+         WHERE [ep].[major_id] = [o].[object_id]
+             AND [ep].[minor_id] = 0
+             AND [ep].[class] = 1
+             AND [ep].[name] = N'microsoft_database_tools_support'
+    )
+)
+SELECT 1 ELSE SELECT 0"
+2020-10-08T12:02:16.8638634+03:00 [INF] (Microsoft.EntityFrameworkCore.Database.Command) Executed DbCommand ("51"ms) [Parameters=[""], CommandType='Text', CommandTimeout='30']"
+""
+IF EXISTS
+    (SELECT *
+     FROM [sys].[objects] o
+     WHERE [o].[type] = 'U'
+     AND [o].[is_ms_shipped] = 0
+     AND NOT EXISTS (SELECT *
+         FROM [sys].[extended_properties] AS [ep]
+         WHERE [ep].[major_id] = [o].[object_id]
+             AND [ep].[minor_id] = 0
+             AND [ep].[class] = 1
+             AND [ep].[name] = N'microsoft_database_tools_support'
+    )
+)
+SELECT 1 ELSE SELECT 0"
+2020-10-08T12:02:17.0387922+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Creating DbCommand for '"ExecuteReader"'.
+2020-10-08T12:02:17.0403792+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Created DbCommand for '"ExecuteReader"' (1ms).
+2020-10-08T12:02:17.0488988+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Executing DbCommand [Parameters=["@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [l].[Id], [l].[AppUserId], [l].[CreatedAt], [l].[Description], [l].[EndAt], [l].[Funded], [l].[Goal], [l].[ImageUrl], [l].[LunchAt], [l].[Title]
+FROM [Lots] AS [l]
+ORDER BY [l].[LunchAt]
+OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY"
+2020-10-08T12:02:17.0850820+03:00 [INF] (Microsoft.EntityFrameworkCore.Database.Command) Executed DbCommand ("39"ms) [Parameters=["@__p_0='?' (DbType = Int32), @__p_1='?' (DbType = Int32)"], CommandType='Text', CommandTimeout='30']"
+""SELECT [l].[Id], [l].[AppUserId], [l].[CreatedAt], [l].[Description], [l].[EndAt], [l].[Funded], [l].[Goal], [l].[ImageUrl], [l].[LunchAt], [l].[Title]
+FROM [Lots] AS [l]
+ORDER BY [l].[LunchAt]
+OFFSET @__p_0 ROWS FETCH NEXT @__p_1 ROWS ONLY"
+2020-10-08T12:02:17.1372867+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) A data reader was disposed.
+2020-10-08T12:02:17.1514493+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Creating DbCommand for '"ExecuteReader"'.
+2020-10-08T12:02:17.1530230+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Created DbCommand for '"ExecuteReader"' (1ms).
+2020-10-08T12:02:17.1542348+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) Executing DbCommand [Parameters=[""], CommandType='Text', CommandTimeout='30']"
+""SELECT COUNT(*)
+FROM [Lots] AS [l]"
+2020-10-08T12:02:17.1576622+03:00 [INF] (Microsoft.EntityFrameworkCore.Database.Command) Executed DbCommand ("3"ms) [Parameters=[""], CommandType='Text', CommandTimeout='30']"
+""SELECT COUNT(*)
+FROM [Lots] AS [l]"
+2020-10-08T12:02:17.1599931+03:00 [DBG] (Microsoft.EntityFrameworkCore.Database.Command) A data reader was disposed.
+2020-10-08T12:02:17.2835159+03:00 [INF] (Serilog.AspNetCore.RequestLoggingMiddleware) HTTP "GET" "/" responded 200 in 2051.6726 ms

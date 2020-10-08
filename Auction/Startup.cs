@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 
 namespace Auction
 {
@@ -69,15 +70,13 @@ namespace Auction
 
             app.UseRouting();
 
+            app.UseSerilogRequestLogging();
+            
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("pagination",
-                    "Auctions/Page-{page}/SortBy-{sortBy}/Show-{show}",
-                    new { Controller = "Home", action = "Index" });
-                
                 endpoints.MapControllerRoute("update",
                     "UpdateLot/Id-{lotId}",
                     new { Controller = "Lot", action = "Update" });

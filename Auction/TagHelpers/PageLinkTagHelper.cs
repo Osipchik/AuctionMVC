@@ -39,8 +39,8 @@ namespace Auction.TagHelpers
             var urlHelper = _urlHelperFactory.GetUrlHelper(ViewContext);
             
             var result = new TagBuilder("ul");
-            var countFrom = PageModel.CurrentPage > 6 ? PageModel.CurrentPage - 6 : 1;
-            for (var i = countFrom; i <= PageModel.CurrentPage + 6 && i <= PageModel.TotalPages; i++) {
+            var (from, to) = GetRange();
+            for (var i = from; i <= to && i <= PageModel.TotalPages; i++) {
                 var item = new TagBuilder("li");
                 var tag = new TagBuilder("a");
                 PageUrlValues["page"] = i;
@@ -55,6 +55,26 @@ namespace Auction.TagHelpers
                 result.InnerHtml.AppendHtml(item);
             }
             output.Content.AppendHtml(result.InnerHtml);
+        }
+
+        private (int, int) GetRange()
+        {
+            var from = PageModel.CurrentPage - 3;
+            var to = PageModel.CurrentPage + 3;
+            
+            if (to > PageModel.TotalItems)
+            {
+                from -= to - PageModel.TotalItems;
+                to = PageModel.TotalItems;
+            }
+            
+            if (from <= 0)
+            {
+                to -= from - 1;
+                from = 1;
+            }
+
+            return (from, to);
         }
     }
 }

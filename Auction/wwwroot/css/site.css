@@ -97,7 +97,7 @@ button, input {
 
 .type-28 {
   font-size: 28px !important;
-  color: var(--soft-black) !important;
+  /*color: var(--soft-black) !important;*/
 }
 
 .type-24 {
@@ -180,4 +180,20 @@ label {
 
 .filter p {
   margin: 0;
+}
+
+.progress {
+  height: 0.6rem;
+  border-radius: 0;
+}
+
+
+.page-info {
+  padding: 10px 15px;
+}
+
+.page-info p {
+  margin: 0;
+  line-height: 1;
+  padding-bottom: 5px;
 }

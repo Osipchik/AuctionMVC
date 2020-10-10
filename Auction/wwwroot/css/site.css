@@ -109,10 +109,6 @@ button, input {
   color: var(--soft-black);
 }
 
-textarea {
-  resize: none;
-}
-
 label {
   color: var(--grey-darker) !important;
 }
@@ -196,4 +192,11 @@ label {
   margin: 0;
   line-height: 1;
   padding-bottom: 5px;
+}
+
+
+textarea{
+  overflow:hidden !important;
+  padding: 6px 12px !important;
+  resize: none;
 }

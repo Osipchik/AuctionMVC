@@ -17,6 +17,7 @@
 
 <form enctype="multipart/form-data" asp-controller="Lot" asp-action="Create" method="post">
     @{
+        
         await Html.RenderPartialAsync("_Common", Model);
     }
 </form>
@@ -30,7 +31,7 @@
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     $('#preview').attr('src', e.target.result);
-                    $('#drag-n-drop').removeClass('invisible');
+                    $('#drag-n-drop').removeClass('invisible').addClass('image-container');
 
                 }
                 reader.readAsDataURL(input.files[0]);

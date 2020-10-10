@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
-using Auction.Data;
 using Auction.DTO.Pagination;
 using Auction.DTO.SortOptions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Auction.Models;
 using Auction.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace Auction.Controllers
 {
@@ -27,6 +21,17 @@ namespace Auction.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(SortBy sortBy, Show show, int page = 1)
         {
+            return View(await CreateViewModel(sortBy, show, page));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPage(SortBy sortBy, Show show, int page = 1)
+        {
+            return PartialView("_LotView", await CreateViewModel(sortBy, show, page));
+        }
+
+        private async Task<IndexViewModel> CreateViewModel(SortBy sortBy, Show show, int page = 1)
+        {
             var viewModel = new IndexViewModel
             {
                 Lots = await _repository.Order(pageSize, (page - 1) * pageSize, sortBy, i => true),
@@ -39,9 +44,10 @@ namespace Auction.Controllers
                 SortBy = sortBy,
                 Show = show
             };
-            return View(viewModel);
-        }
 
+            return viewModel;
+        }
+        
         public IActionResult Privacy()
         {
             return View();

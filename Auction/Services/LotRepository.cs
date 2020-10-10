@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Auction.Data;
+using Auction.DTO;
 using Auction.DTO.SortOptions;
 using Auction.Models;
 using Microsoft.EntityFrameworkCore;
@@ -57,17 +58,28 @@ namespace Auction.Services
             return await Context.Lots.SingleOrDefaultAsync(i => i.Id == lotId && i.AppUserId == userId);
         }
 
-        public async Task<List<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip)
+        public async Task<List<LotPreview>> FindRange(IQueryable<Lot> queryable, int take, int skip)
         {
-            return await queryable.Skip(skip).Take(take).ToListAsync();
+            return await queryable.Skip(skip).Take(take)
+                .Select(i => new LotPreview
+                {
+                    Id = i.Id,
+                    Title = i.Title,
+                    Description = i.Description,
+                    ImageUrl = i.ImageUrl,
+                    LunchAt = i.LunchAt,
+                    EndAt = i.EndAt,
+                    Goal = i.Goal,
+                    Funded = i.Funded
+                }).ToListAsync();
         }
 
-        public async Task<List<Lot>> FindRange(int take, int skip, Expression<Func<Lot, bool>> expression)
+        public async Task<List<LotPreview>> FindRange(int take, int skip, Expression<Func<Lot, bool>> expression)
         {
             return await FindRange(Context.Lots.Where(expression), take, skip);
         }
 
-        public async Task<List<Lot>> Order(int take, int skip, SortBy sortBy, Expression<Func<Lot, bool>> expression)
+        public async Task<List<LotPreview>> Order(int take, int skip, SortBy sortBy, Expression<Func<Lot, bool>> expression)
         {
             var query = Context.Lots.Where(expression);
             query = sortBy switch

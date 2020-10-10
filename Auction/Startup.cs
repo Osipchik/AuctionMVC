@@ -1,23 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Auction.Data;
 using Auction.Models;
 using Auction.Services;
 using Auction.Services.CloudStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json.Serialization;
 using Serilog;
+using Westwind.AspNetCore.Markdown;
 
 namespace Auction
 {
@@ -35,6 +29,9 @@ namespace Auction
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+            services.AddMarkdown();
+            services.AddAntiforgery(x => x.HeaderName = "X-ANTI-FORGERY-TOKEN");
+            
             services.Configure<IdentityOptions>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -46,7 +43,13 @@ namespace Auction
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
             
-            services.AddControllersWithViews().AddRazorRuntimeCompilation();
+            services.AddControllersWithViews()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                })
+                .AddRazorRuntimeCompilation()
+                .AddApplicationPart(typeof(MarkdownPageProcessorMiddleware).Assembly);
             
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ILotRepository, LotRepository>();
@@ -66,11 +69,13 @@ namespace Auction
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
 
+            app.UseMarkdown();
+            app.UseStaticFiles();
+            
             app.UseRouting();
 
-            app.UseSerilogRequestLogging();
+            // app.UseSerilogRequestLogging();
             
             app.UseAuthentication();
             app.UseAuthorization();

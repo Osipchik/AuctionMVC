@@ -42,9 +42,10 @@ namespace Auction.TagHelpers
             var (from, to) = GetRange();
             for (var i = from; i <= to && i <= PageModel.TotalPages; i++) {
                 var item = new TagBuilder("li");
-                var tag = new TagBuilder("a");
+                var tag = new TagBuilder("p");
                 PageUrlValues["page"] = i;
-                tag.Attributes["href"] = urlHelper.Action(PageAction, PageUrlValues);
+                // tag.Attributes["href"] = urlHelper.Action(PageAction, PageUrlValues);
+                tag.Attributes["data-href"] = urlHelper.Action(PageAction, PageUrlValues);
                 if (PageClassesEnabled) {
                     tag.AddCssClass(PageClass);
                     item.AddCssClass(i == PageModel.CurrentPage

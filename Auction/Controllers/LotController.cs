@@ -15,7 +15,6 @@ namespace Auction.Controllers
     {
         private readonly ILotRepository _repository;
         private readonly ICloudStorage _cloudStorage;
-        public int pageSize = 3;
         
         public LotController(ILotRepository repository, ICloudStorage cloudStorage)
         {
@@ -46,6 +45,8 @@ namespace Auction.Controllers
                 }
             
                 await _repository.Add(lot);
+
+                return RedirectToAction("Get", lot.Id);
             }
             
             return View();
@@ -77,7 +78,8 @@ namespace Auction.Controllers
                     ImageUrl = lot.ImageUrl,
                     LunchAt = lot.LunchAt,
                     EndAt = lot.EndAt,
-                    Goal = lot.Goal
+                    Goal = lot.Goal,
+                    Story = lot.Story
                 };
                 
                 return model;
@@ -104,8 +106,7 @@ namespace Auction.Controllers
                 }
             }
             
-            ViewData["Id"] = lotId;
-            return View();
+            return RedirectToAction("Get", new {lotId});
         }
         
         private void SetLotModel(CreateLotModel model, Lot lot)
@@ -115,6 +116,7 @@ namespace Auction.Controllers
             lot.LunchAt = model.LunchAt;
             lot.EndAt = model.EndAt;
             lot.Goal = model.Goal;
+            lot.Story = model.Story;
         }
 
         private async Task AddImage(Lot lot, IFormFile image)
@@ -149,7 +151,8 @@ namespace Auction.Controllers
         public async Task<IActionResult> Get(int lotId)
         {
             var lot = await _repository.Find(lotId);
-            if (lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole))
+            var isValid = lot != null; //&& lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole);
+            if (isValid)
             {
                 ViewData["UserId"] = HttpContext.UserId();
                 return View(lot);
@@ -157,44 +160,12 @@ namespace Auction.Controllers
             
             return RedirectToAction("Error", "Home");
         }
-        
-        // [HttpGet]
-        // [Authorize]
-        // public async Task<IActionResult> GetUserLots(string userId, int page = 1)
-        // {
-        //     if (HttpContext.UserId() == userId && User.IsInRole(Constants.AdminRole))
-        //     {
-        //         var lots = await _repository.FindRange(10, 0, i => i.AppUserId == userId);
-        //         var viewModel = new IndexViewModel
-        //         {
-        //             Lots = await _repository.FindRange(10, 0, i => i.AppUserId == userId),
-        //             PagingInfo = new PagingInfo
-        //             {
-        //                 CurrentPage = page,
-        //                 ItemsPerPage = pageSize,
-        //                 TotalItems = await _repository.Count()
-        //             }
-        //         };
-        //         
-        //         return View(viewModel);
-        //     }
-        //
-        //     return RedirectToAction("Index", "Home");
-        // }
-        
-        // public async Task<IActionResult> Index(int page = 1)
-        // {
-        //     var viewModel = new IndexViewModel
-        //     {
-        //         Lots = await _repository.FindRange(pageSize, (page - 1) * pageSize),
-        // PagingInfo = new PagingInfo
-        // {
-        //     CurrentPage = page,
-        //     ItemsPerPage = pageSize,
-        //     TotalItems = await _repository.Count()
-        // }
-        //     };
-        //     return View(viewModel);
-        // }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RenderMarkdown([FromBody] string markdown)
+        {
+            return PartialView("_Markdown", markdown);
+        }
     }
 }

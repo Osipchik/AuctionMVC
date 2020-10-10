@@ -1,5 +1,6 @@
 ﻿@using Auction.DTO.Partial
 @using Auction.Services
+@using Westwind.AspNetCore.Markdown
 @model Lot
 
 
@@ -38,44 +39,66 @@
             <p class="text-muted">backers</p>
         </div>
         <div class="page-info">
-            <p class="type-28 text-secondary">25</p>
-            <p class="text-muted">days to go</p>
-        </div>
-        <div>
-            @if (User.IsInRole(Constants.AdminRole) || (string) ViewData["UserId"] == Model.AppUserId)
-            {
-                <div class="row d-flex justify-content-around">
-                    <a
-                        asp-controller="Lot" asp-action="Update" asp-route-lotId="@Model.Id"
-                        role="button" class="btn btn-outline-dark btn-sm">
-                        Update
-                    </a>
-                    <form method="post" asp-controller="Lot" asp-action="Delete" asp-route-lotId="@Model.Id">
-                        <span id="confirmDelete" style="display: none;">
-                            <span>Are you sure you want to delete this lot?</span>
-                            <button
-                                type="submit" class="btn btn-outline-danger btn-sm"
-                                onclick="onDelete()">
-                                Yes
-                            </button>
-                            <button
-                                type="button" class="btn btn-outline-primary btn-sm"
-                                onclick="dropDelete()">
-                                No
-                            </button>
-                        </span>
-                        <span id="delete">
-                            <button
-                                type="button" class="btn btn-outline-danger btn-sm"
-                                onclick="onDelete()">
-                                Delete
-                            </button>
-                        </span>
-                    </form>
-                </div>
+            @{
+                var dateDif = Model.EndAt - DateTime.UtcNow;
+                if (dateDif.Days != 0)
+                {
+                    <p class="type-28 text-secondary">@dateDif.Days</p>
+                    <p class="text-muted">days to go</p>
+                }
+                else if (dateDif.Hours != 0)
+                {
+                    <p class="type-28 text-secondary">@dateDif.ToString(@"hh\:mm")</p>
+                    <p class="text-muted">hours to go</p>
+                }
+                else
+                {
+                    <p class="type-28 text-secondary">@dateDif.ToString(@"hh\:mm")</p>
+                    <p class="text-muted">minutes to go</p>
+                }
             }
+
         </div>
+        <div class="text-center my-3">
+            <button type="button" class="btn btn-success w-100">Back this project</button>
+        </div>
+        @if (User.IsInRole(Constants.AdminRole) || (string) ViewData["UserId"] == Model.AppUserId)
+        {
+            <div class="row d-flex justify-content-center">
+                <a
+                    asp-controller="Lot" asp-action="Update" asp-route-lotId="@Model.Id"
+                    role="button" class="btn btn-outline-dark btn-sm">
+                    Update
+                </a>
+                <form method="post" asp-controller="Lot" asp-action="Delete" asp-route-lotId="@Model.Id">
+                    <span id="confirmDelete" style="display: none;">
+                        <span>Are you sure you want to delete this lot?</span>
+                        <button
+                            type="submit" class="btn btn-outline-danger btn-sm"
+                            onclick="onDelete()">
+                            Yes
+                        </button>
+                        <button
+                            type="button" class="btn btn-outline-primary btn-sm"
+                            onclick="dropDelete()">
+                            No
+                        </button>
+                    </span>
+                    <span id="delete">
+                        <button
+                            type="button" class="btn btn-outline-danger btn-sm"
+                            onclick="onDelete()">
+                            Delete
+                        </button>
+                    </span>
+                </form>
+            </div>
+        }
     </div>
+</div>
+
+<div>
+    @Markdown.ParseHtmlString(Model.Story)
 </div>
 
 @section Scripts

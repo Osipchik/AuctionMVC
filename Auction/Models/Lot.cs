@@ -9,6 +9,7 @@ namespace Auction.Models
         public string ImageUrl { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string Story { get; set; }
         
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }

@@ -21,5 +21,8 @@ namespace Auction.DTO
         public DateTime EndAt { get; set; }
         
         public decimal Goal { get; set; }
+        
+        [DataType(DataType.MultilineText)]
+        public string Story { get; set; }
     }
 }

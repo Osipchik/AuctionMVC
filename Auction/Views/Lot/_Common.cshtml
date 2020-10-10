@@ -1,8 +1,10 @@
 ﻿@using Auction.DTO.Partial
+@using Markdig
 @model Auction.DTO.CreateLotModel
+@addTagHelper *, Westwind.AspNetCore.Markdown
 
 
-    <input asp-for="ImageUrl" type="hidden">
+<input asp-for="ImageUrl" type="hidden">
     
     <div class="row">
         @{ 
@@ -131,6 +133,38 @@
     </div>
     <hr/>
 
+<div>
+
+</div>
+
+<div>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" data-toggle="tab" href="#markdown-edit" role="tab" aria-selected="true">Edit</a>
+        </li>
+        
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="prev" data-toggle="tab" href="#markdown-preview" role="tab" aria-selected="false">Preview</a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="markdown-edit" role="tabpanel" aria-labelledby="home-tab">
+            <div class="form-group">
+                <textarea asp-for="Story" class="form-control" id="markdown-editor"></textarea>
+                @* <textarea class="form-control" id="markdown-editor" ></textarea> *@
+            </div>
+        </div>
+        <div class="tab-pane fade" id="markdown-preview" role="tabpanel" aria-labelledby="profile-tab">
+            <div id="story">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="text-center">
     <button class="btn btn-primary mx-auto" type="submit">Save basics</button>
 </div>
+
+<script src="~/js/markdownLoader.js"></script>

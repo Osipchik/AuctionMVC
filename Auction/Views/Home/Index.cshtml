@@ -6,13 +6,17 @@
 }
 
 <div class="row d-flex justify-content-between px-3 mb-1">
-    <p class="font-weight-norma text-secondary">Total items: @Model.PagingInfo.TotalItems</p>
-    <form method="get" asp-controller="Home" asp-action="Index" class="form-inline px-1">
+    <p class="font-weight-norma text-secondary">
+        Total items: 
+        <span id="items-count">@Model.PagingInfo.TotalItems</span>
+    </p>
+    <div class="form-inline px-1">
         <div class="row filter">
             <p class="text-muted">Showing:</p>
-            <select asp-for="Show" asp-items="Html.GetEnumSelectList<Show>()" 
+            <select asp-for="Show" asp-items="Html.GetEnumSelectList<Show>()"
                     class="form-control form-control-sm"
-                    onchange="onFilter()">
+                    id="show-filter"
+                    onchange="onChange()">
             </select>
         </div>
         <div class="row filter">
@@ -25,59 +29,22 @@
         </div>
         <div class="row filter">
             <p class="text-muted">SortBy:</p>
-            <select asp-for="SortBy" asp-items="Html.GetEnumSelectList<SortBy>()" 
+            <select asp-for="SortBy" asp-items="Html.GetEnumSelectList<SortBy>()"
                     class="form-control form-control-sm"
-                    onchange="onFilter()">
+                    id="sort-filter"
+                    onchange="onChange()">
             </select>
         </div>
-    </form>
+    </div>
 </div>
 
-<div>
-    @foreach (var i in Model.Lots)
-    {
-        <div class="card mb-3">
-            <a asp-controller="Lot" asp-action="Get" asp-route-lotId="@i.Id">
-                <div class="row no-gutters">
-                    <div class="col-md-5 col-lg-4">
-                        <img src="@i.ImageUrl" class="card-img" alt="...">
-                    </div>
-                    <div class="col-md-7 col-lg-8">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">@i.Title</h5>
-                            <p class="card-text">@i.Description</p>
-                            <div class="row justify-content-between mt-auto">
-                                <div>
-                                    <p class="card-text"><small class="text-muted">Lunch at: @i.LunchAt</small></p>
-                                    <p class="card-text"><small class="text-muted">End at: @i.EndAt</small></p>
-                                </div>
-                                <div>
-                                    <p class="card-text"><small class="text-muted">Goal: @i.Goal</small></p>
-                                    <p class="card-text"><small class="text-muted">Funded: @i.Funded</small></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-    }
+<div id="lot-view-container">
+    @await Html.PartialAsync("_LotView", Model)
 </div>
 
-<ul page-model="@Model.PagingInfo"
-    page-url-show="@Model.Show"
-    page-url-sortBy="@Model.SortBy"
-    page-action="Index" page-classes-enabled="true"
-    page-class="page-link" page-class-normal="page-item"
-    page-class-selected="page-item active" class="pagination">
-</ul>
 
 
 @section Scripts
 {
-    <script>
-        function onFilter(){
-            $('.form-inline').submit();
-        }
-    </script>
+    <script src="~/js/lotListPage.js"></script>
 }

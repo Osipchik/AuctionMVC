@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Auction.DTO;
 using Auction.DTO.Pagination;
@@ -154,6 +155,10 @@ namespace Auction.Controllers
             var isValid = lot != null; //&& lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole);
             if (isValid)
             {
+                await _repository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
+                var amount = lot.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount;
+                lot.Funded = amount ?? 0m;
+                
                 ViewData["UserId"] = HttpContext.UserId();
                 return View(lot);
             }

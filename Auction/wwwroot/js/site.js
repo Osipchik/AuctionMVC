@@ -9,3 +9,10 @@ function changeUrl(newUrl){
 }
 
 
+function getFormHeader(){
+    return {
+        'X-ANTI-FORGERY-TOKEN': document.getElementsByName("__RequestVerificationToken")[0].value,
+        'Accept': 'application/json',
+        "Content-Type": "application/json",
+    }
+}

@@ -30,13 +30,16 @@
                 <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
             <div class="page-info">
-                <p class="text-info type-28">current rate US$ @Model.Funded</p>
-                <p class="text-muted">pledged of US$ @Model.Goal goal</p>
+                <p class="text-info type-28">
+                    current price US$
+                    <span id="funded-span">@Model.Funded</span>
+                </p>
+                <p class="text-muted">Starting price US$ @Model.Goal goal</p>
             </div>
         </div>
         <div class="page-info">
-            <p class="type-28 text-secondary">142</p>
-            <p class="text-muted">backers</p>
+            <p class="type-28 text-secondary" id="rate-count">@Model.Rates.Count</p>
+            <p class="text-muted">rates</p>
         </div>
         <div class="page-info">
             @{
@@ -46,21 +49,25 @@
                     <p class="type-28 text-secondary">@dateDif.Days</p>
                     <p class="text-muted">days to go</p>
                 }
-                else if (dateDif.Hours != 0)
-                {
-                    <p class="type-28 text-secondary">@dateDif.ToString(@"hh\:mm")</p>
-                    <p class="text-muted">hours to go</p>
-                }
                 else
                 {
                     <p class="type-28 text-secondary">@dateDif.ToString(@"hh\:mm")</p>
-                    <p class="text-muted">minutes to go</p>
+                    <p class="text-muted">left time</p>
                 }
             }
 
         </div>
         <div class="text-center my-3">
-            <button type="button" class="btn btn-success w-100">Back this project</button>
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(i => i.Id)
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" id="rate-input" value="@Model.Funded">
+                <div class="input-group-append bid-group">
+                    <button class="btn btn-outline-secondary" onclick="add()">+</button>
+                    <button class="btn btn-outline-secondary" onclick="minus()">-</button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-success w-100" onclick="onBackClick()">Back this project</button>
         </div>
         @if (User.IsInRole(Constants.AdminRole) || (string) ViewData["UserId"] == Model.AppUserId)
         {
@@ -97,21 +104,11 @@
     </div>
 </div>
 
-<div>
+<div class="mx-auto story">
     @Markdown.ParseHtmlString(Model.Story)
 </div>
 
 @section Scripts
 {
-    <script>
-        function onDelete(){
-            $('#confirmDelete').show();
-            $('#delete').hide();
-        }
-        
-        function dropDelete(){
-            $('#confirmDelete').hide();
-            $('#delete').show();
-        }
-    </script>
+    <script src="~/js/lotPage.js"></script>
 }

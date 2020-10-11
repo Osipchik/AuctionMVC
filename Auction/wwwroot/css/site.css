@@ -200,3 +200,59 @@ textarea{
   padding: 6px 12px !important;
   resize: none;
 }
+
+.bid-group button {
+  width: 2.35rem;
+  /*height: 2.35rem;*/
+}
+
+
+
+
+.story img {
+  max-width: 100%;
+}
+
+section {
+  padding: 0 calc(50vw - 590px);
+}
+
+section {
+  padding: 0 15px;
+}
+
+@media (min-width: 575.98px){
+  section {
+    padding: 0 calc(50vw - 270px);
+  }
+}
+
+@media (min-width: 767.98px){
+  section {
+    padding: 0 calc(50vw - 360px);
+  }
+
+  .story {
+    width: 76%;
+  }
+}
+
+@media (min-width: 991.98px) {
+  section{
+    padding: 0 calc(50vw - 480px);
+  }
+
+  .story {
+    width: 76%;
+  }
+}
+
+@media (min-width: 1199.98px){
+  section {
+    padding: 0 calc(50vw - 590px);
+  }
+
+  .story {
+    width: 60%;
+  }
+}

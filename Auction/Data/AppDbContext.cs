@@ -21,7 +21,8 @@ namespace Auction.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<AppUser>()
                 .HasMany(b => b.Rates)
-                .WithOne(u => u.AppUser);
+                .WithOne()
+                .HasForeignKey(i => i.AppUserId);
             
             modelBuilder.Entity<AppUser>()
                 .HasMany(b => b.Lots)
@@ -30,7 +31,8 @@ namespace Auction.Data
 
             modelBuilder.Entity<Lot>()
                 .HasMany(r => r.Rates)
-                .WithOne();
+                .WithOne()
+                .HasForeignKey(i => i.LotId);
         }
     }
 }

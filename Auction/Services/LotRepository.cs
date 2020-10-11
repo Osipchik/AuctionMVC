@@ -60,7 +60,7 @@ namespace Auction.Services
 
         public async Task<List<LotPreview>> FindRange(IQueryable<Lot> queryable, int take, int skip)
         {
-            return await queryable.Skip(skip).Take(take)
+            return await queryable.Skip(skip).Take(take).Include(i => i.Rates)
                 .Select(i => new LotPreview
                 {
                     Id = i.Id,
@@ -70,7 +70,7 @@ namespace Auction.Services
                     LunchAt = i.LunchAt,
                     EndAt = i.EndAt,
                     Goal = i.Goal,
-                    Funded = i.Funded
+                    Funded = i.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault().Amount
                 }).ToListAsync();
         }
 

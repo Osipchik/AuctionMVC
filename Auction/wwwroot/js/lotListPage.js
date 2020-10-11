@@ -13,7 +13,8 @@ async function onPageClick(){
 
 
 async function fetchView(url){
-    let response = await fetch('https://localhost:5001/home/GetPage' + url);
+    
+    let response = await fetch(window.location.origin + '/home/GetPage' + url);
     if (response.ok){
         changeUrl(url)
         document.querySelectorAll('[data-href]')

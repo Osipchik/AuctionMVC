@@ -12,6 +12,8 @@ namespace Auction.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedAt { get; set; }
         
-        public AppUser AppUser { get; set; }
+        public string AppUserId { get; set; }
+        public int LotId { get; set; }
+        // public AppUser AppUser { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using Auction.Data;
 using Auction.DTO;
 using Auction.DTO.SortOptions;
 using Auction.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Auction.Services
@@ -48,6 +49,15 @@ namespace Auction.Services
             return entity;
         }
 
+        public async Task<Lot> Find(int lotId, HttpContext context)
+        {
+            var lot = await Find(lotId);
+            var isValid = lot?.AppUserId == context.UserId() ||
+                          context.User.IsInRole(Constants.AdminRole);
+            
+            return isValid ? lot : null;
+        }
+        
         public async Task<Lot> Find(int id)
         {
             return await Context.Lots.FindAsync(id);
@@ -73,19 +83,14 @@ namespace Auction.Services
                     Funded = i.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault().Amount
                 }).ToListAsync();
         }
-
-        public async Task<List<LotPreview>> FindRange(int take, int skip, Expression<Func<Lot, bool>> expression)
-        {
-            return await FindRange(Context.Lots.Where(expression), take, skip);
-        }
-
-        public async Task<List<LotPreview>> Order(int take, int skip, SortBy sortBy, Expression<Func<Lot, bool>> expression)
+        
+        private IQueryable<Lot> Order(SortBy sortBy, Expression<Func<Lot, bool>> expression)
         {
             var query = Context.Lots.Where(expression);
             query = sortBy switch
             {
-                SortBy.Date => query.OrderBy(i => i.LunchAt),
-                SortBy.DistinctDate => query.OrderByDescending(i => i.LunchAt),
+                SortBy.Date => query.OrderBy(i => i.EndAt),
+                SortBy.DistinctDate => query.OrderByDescending(i => i.EndAt),
                 SortBy.Name => query.OrderBy(i => i.Title),
                 SortBy.DistinctName => query.OrderByDescending(i => i.Title),
                 SortBy.Goal => query.OrderBy(i => i.Goal),
@@ -93,7 +98,22 @@ namespace Auction.Services
                 _ => query
             };
 
-            return await FindRange(query, take, skip);
+            return query;
+        }
+        
+        public IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show, HttpContext context)
+        {
+            var query = show switch
+            {
+                ShowOptions.Active => Order(sortBy, i => i.IsAvailable && i.EndAt > DateTime.UtcNow),
+                ShowOptions.Sold => Order(sortBy, i => i.IsAvailable && i.EndAt < DateTime.UtcNow),
+                ShowOptions.All => Order(sortBy, i => i.IsAvailable),
+                ShowOptions.MyLots => context.User.Identity.IsAuthenticated 
+                    ? Order(sortBy, i => i.AppUserId == context.UserId())
+                    : Order(sortBy, i => i.IsAvailable)
+            };
+            
+            return query;
         }
     }
 }

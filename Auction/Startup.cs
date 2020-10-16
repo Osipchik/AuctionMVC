@@ -1,7 +1,11 @@
+using System;
 using Auction.Data;
 using Auction.Models;
 using Auction.Services;
 using Auction.Services.CloudStorage;
+using Auction.Services.Hangfire;
+using Hangfire;
+using Hangfire.Dashboard;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -26,8 +30,8 @@ namespace Auction
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
 
             services.AddMarkdown();
             services.AddAntiforgery(x => x.HeaderName = "X-ANTI-FORGERY-TOKEN");
@@ -50,6 +54,10 @@ namespace Auction
                 })
                 .AddRazorRuntimeCompilation()
                 .AddApplicationPart(typeof(MarkdownPageProcessorMiddleware).Assembly);
+
+
+            services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
+
             
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ILotRepository, LotRepository>();
@@ -79,6 +87,18 @@ namespace Auction
             
             app.UseAuthentication();
             app.UseAuthorization();
+            
+            
+            // app.UseHangfireServer(new BackgroundJobServerOptions
+            // {
+            //     SchedulePollingInterval = TimeSpan.FromSeconds(5)
+            // });
+            app.UseHangfireServer();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new []{new HangfireAuthFilter()}
+            });
+            
 
             app.UseEndpoints(endpoints =>
             {
@@ -92,6 +112,6 @@ namespace Auction
 
                 endpoints.MapDefaultControllerRoute();
             });
-        }
+        }    
     }
 }

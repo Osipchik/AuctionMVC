@@ -256,3 +256,7 @@ section {
     width: 60%;
   }
 }
+
+.pagination {
+  cursor: pointer !important;
+}

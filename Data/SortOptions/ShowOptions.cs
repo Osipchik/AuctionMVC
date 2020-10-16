@@ -1,14 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Auction.DTO.SortOptions
+namespace Data.SortOptions
 {
-    public enum Show
+    public enum ShowOptions
     {
         [Display(Name="Active")]
         Active,
         [Display(Name="Sold")]
         Sold,
         [Display(Name="All")]
-        All
+        All,
+        [Display(Name="My Lots")]
+        MyLots
     }
 }

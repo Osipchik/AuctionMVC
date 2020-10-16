@@ -1,0 +1,62 @@
+﻿@using Data.SortOptions
+@model Web.DTO.Pagination.IndexViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="row d-flex justify-content-between px-3 mb-1">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Search" id="search-input">
+        <div class="input-group-append" onclick="onChange()">
+            <button type="button" class="btn btn-outline-secondary">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+                    <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    
+    <p class="font-weight-norma text-secondary">
+        Total items:
+        <span id="items-count">@Model.PagingInfo.TotalItems</span>
+    </p>
+    <div class="form-inline px-1">
+        <div class="row filter">
+            <p class="text-muted">ShowOptionsing:</p>
+            <select asp-for="ShowOptions" asp-items="Html.GetEnumSelectList<ShowOptions>()"
+                    class="form-control form-control-sm"
+                    id="show-filter"
+                    onchange="onChange()">
+            </select>
+        </div>
+        <div class="row filter">
+            <p class="text-muted">Category:</p>
+            <select class="form-control form-control-sm">
+                <option>any</option>
+                <option>active</option>
+                <option>sold</option>
+            </select>
+        </div>
+        <div class="row filter">
+            <p class="text-muted">SortBy:</p>
+            <select asp-for="SortBy" asp-items="Html.GetEnumSelectList<SortBy>()"
+                    class="form-control form-control-sm"
+                    id="sort-filter"
+                    onchange="onChange()">
+            </select>
+        </div>
+    </div>
+</div>
+
+<div id="lot-view-container">
+    @await Html.PartialAsync("_LotView", Model)
+</div>
+
+
+
+@section Scripts
+{
+    <script src="~/js/lotListPage.js"></script>
+}

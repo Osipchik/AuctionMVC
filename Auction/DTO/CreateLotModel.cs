@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Auction.Models;
 using Microsoft.AspNetCore.Http;
 
 namespace Auction.DTO
@@ -24,5 +25,16 @@ namespace Auction.DTO
         
         [DataType(DataType.MultilineText)]
         public string Story { get; set; }
+
+        public CreateLotModel(Lot lot)
+        {
+            Title = lot.Title;
+            Description = lot.Description;
+            ImageUrl = lot.ImageUrl;
+            LunchAt = lot.LunchAt;
+            EndAt = lot.EndAt;
+            Goal = lot.Goal;
+            Story = lot.Story;
+        }
     }
 }

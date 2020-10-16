@@ -19,22 +19,24 @@ namespace Auction.Controllers
         }
         
         [HttpGet]
-        public async Task<IActionResult> Index(SortBy sortBy, Show show, int page = 1)
+        public async Task<IActionResult> Index(SortBy sortBy, ShowOptions show, int page = 1)
         {
             return View(await CreateViewModel(sortBy, show, page));
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPage(SortBy sortBy, Show show, int page = 1)
+        public async Task<IActionResult> GetPage(SortBy sortBy, ShowOptions show, int page = 1)
         {
             return PartialView("_LotView", await CreateViewModel(sortBy, show, page));
         }
 
-        private async Task<IndexViewModel> CreateViewModel(SortBy sortBy, Show show, int page = 1)
+        private async Task<IndexViewModel> CreateViewModel(SortBy sortBy, ShowOptions show, int page = 1)
         {
+            var query = _repository.FilterLots(sortBy, show, HttpContext);
+            
             var viewModel = new IndexViewModel
             {
-                Lots = await _repository.Order(pageSize, (page - 1) * pageSize, sortBy, i => true),
+                Lots = await _repository.FindRange(query, pageSize, (page - 1) * pageSize),
                 PagingInfo = new PagingInfo
                 {
                     CurrentPage = page,
@@ -42,12 +44,12 @@ namespace Auction.Controllers
                     TotalItems = await _repository.Count()
                 },
                 SortBy = sortBy,
-                Show = show
+                ShowOptions = show
             };
 
             return viewModel;
         }
-        
+
         public IActionResult Privacy()
         {
             return View();

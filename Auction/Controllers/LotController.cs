@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Auction.DTO;
-using Auction.DTO.Pagination;
 using Auction.Models;
 using Auction.Services;
 using Auction.Services.CloudStorage;
+using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -37,14 +37,14 @@ namespace Auction.Controllers
         {
             if (ModelState.IsValid)
             {
-                var lot = new Lot {AppUserId = HttpContext.UserId(), CreatedAt = DateTime.Now};
+                var lot = new Lot
+                {
+                    AppUserId = HttpContext.UserId(),
+                    CreatedAt = DateTime.Now
+                };
             
                 SetLotModel(model, lot);
-                if (model.Image != null)
-                {
-                    await AddImage(lot, model.Image);
-                }
-            
+                await AddImage(lot, model.Image);
                 await _repository.Add(lot);
 
                 return RedirectToAction("Get", lot.Id);
@@ -57,38 +57,16 @@ namespace Auction.Controllers
         [Authorize]
         public async Task<IActionResult> Update(int lotId)
         {
-            var model = await GetModel(lotId);
-            if (model != null)
+            var lot = await _repository.Find(lotId, HttpContext);
+            if (lot != null)
             {
                 ViewData["Id"] = lotId;
-                return View(model);
+                return View( new CreateLotModel(lot));
             }
             
             return RedirectToAction("index", "Home");
         }
-        
-        private async Task<CreateLotModel> GetModel(int id)
-        {
-            var lot = await _repository.Find(id);
-            if (lot != null)
-            {
-                var model = new CreateLotModel
-                {
-                    Title = lot.Title,
-                    Description = lot.Description,
-                    ImageUrl = lot.ImageUrl,
-                    LunchAt = lot.LunchAt,
-                    EndAt = lot.EndAt,
-                    Goal = lot.Goal,
-                    Story = lot.Story
-                };
-                
-                return model;
-            }
 
-            return null;
-        }
-        
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -96,13 +74,11 @@ namespace Auction.Controllers
         {
             if (ModelState.IsValid)
             {
-                var lot = User.IsInRole(Constants.AdminRole)
-                    ? await _repository.Find(lotId)
-                    : await _repository.FindUserLot(lotId, HttpContext.UserId());
-
+                var lot = await _repository.Find(lotId, HttpContext);
                 if (lot != null)
                 {
                     SetLotModel(model, lot);
+                    await AddImage(lot, model.Image);
                     await _repository.Update(lot);   
                 }
             }
@@ -122,6 +98,11 @@ namespace Auction.Controllers
 
         private async Task AddImage(Lot lot, IFormFile image)
         {
+            if (image == null)
+            {
+                return;
+            }
+            
             if (lot.ImageUrl != null)
             {
                 await _cloudStorage.DeleteFileAsync(lot.ImageUrl);
@@ -136,9 +117,7 @@ namespace Auction.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int lotId)
         {
-            var lot = User.IsInRole(Constants.AdminRole)
-                ? await _repository.Find(lotId)
-                : await _repository.FindUserLot(lotId, HttpContext.UserId());
+            var lot = await _repository.Find(lotId, HttpContext);
 
             if (lot != null)
             {
@@ -152,15 +131,21 @@ namespace Auction.Controllers
         public async Task<IActionResult> Get(int lotId)
         {
             var lot = await _repository.Find(lotId);
-            var isValid = lot != null; //&& lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole);
-            if (isValid)
+            
+            if (lot != null)
             {
-                await _repository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
-                var amount = lot.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount;
-                lot.Funded = amount ?? 0m;
+                var isOwner = HttpContext.User.Identity.IsAuthenticated &&
+                              (lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole));
                 
-                ViewData["UserId"] = HttpContext.UserId();
-                return View(lot);
+                if (lot.IsAvailable || isOwner)
+                {
+                    await _repository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
+                    var amount = lot.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount;
+                    lot.Funded = amount ?? 0m;
+                
+                    ViewData["UserId"] = HttpContext.UserId();
+                    return View(lot);
+                }
             }
             
             return RedirectToAction("Error", "Home");
@@ -171,6 +156,32 @@ namespace Auction.Controllers
         public IActionResult RenderMarkdown([FromBody] string markdown)
         {
             return PartialView("_Markdown", markdown);
+        }
+
+        
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> LaunchProject(int lotId)
+        {
+            var lot = await _repository.Find(lotId, HttpContext);
+            if (lot != null)
+            {
+                lot.IsAvailable = true;
+                await _repository.Update(lot);
+
+                BackgroundJob.Schedule(
+                    () => BackgroundTask(lotId),
+                    lot.EndAt - DateTime.UtcNow
+                );
+            }
+            
+            return Ok(new {lotId});
+        }
+
+        private async Task BackgroundTask(int id)
+        {
+            var lot = await _repository.Find(id);
+            await _repository.Delete(lot);
         }
     }
 }

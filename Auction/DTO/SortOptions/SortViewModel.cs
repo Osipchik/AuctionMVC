@@ -2,7 +2,7 @@
 {
     public class SortViewModel
     {
-        public Show Show { get; set; }
+        public ShowOptions Show { get; set; }
         public SortBy SortBy { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Auction.DTO.Pagination
     {
         public List<LotPreview> Lots { get; set; }
         public PagingInfo PagingInfo { get; set; }
-        public Show Show { get; set; }
+        public ShowOptions ShowOptions { get; set; }
         public SortBy SortBy { get; set; }
         public string Filter { get; set; }
     }

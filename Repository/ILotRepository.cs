@@ -2,9 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Data;
-using Data.DTO;
-using Data.SortOptions;
 using Microsoft.AspNetCore.Http;
+using Repository.SortOptions;
 
 namespace Repository
 {
@@ -13,7 +12,7 @@ namespace Repository
         AppDbContext Context { get; set; }
         ValueTask<int> Count();
         Task<Lot> Find(int lotId, HttpContext context);
-        Task<List<LotPreview>> FindRange(IQueryable<Lot> queryable, int take, int skip);
+        Task<List<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip);
         IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show, HttpContext context);
     }
 }

@@ -1,4 +1,4 @@
-namespace Data
+namespace Web.DTO
 {
     public class ErrorViewModel
     {

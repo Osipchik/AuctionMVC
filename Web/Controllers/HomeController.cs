@@ -1,11 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Data;
-using Data.SortOptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repository;
+using Repository.SortOptions;
+using Web.DTO;
 using Web.DTO.Pagination;
 
 namespace Web.Controllers
@@ -13,11 +15,13 @@ namespace Web.Controllers
     public class HomeController : Controller
     {
         private readonly ILotRepository _repository;
+        private readonly IMapper _mapper;
         public int pageSize = 1;
         
-        public HomeController(ILotRepository repository)
+        public HomeController(ILotRepository repository, IMapper mapper)
         {
             _repository = repository;
+            _mapper = mapper;
         }
         
         [HttpGet]
@@ -42,10 +46,12 @@ namespace Web.Controllers
                     ? query.Include(i => i.AppUser).Where(i => i.AppUser.UserName.Contains(search.Substring(1)))
                     : query.Where(i => i.Title.Contains(search));
             }
+
+            var lots = await _repository.FindRange(query, pageSize, (page - 1) * pageSize);
             
             var viewModel = new IndexViewModel
             {
-                Lots = await _repository.FindRange(query, pageSize, (page - 1) * pageSize),
+                Lots = lots.Select(_mapper.Map<Lot, LotPreview>).ToList(),
                 PagingInfo = new PagingInfo
                 {
                     CurrentPage = page,

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Data;
 using Microsoft.AspNetCore.Http;
+using Web.Attributes;
 
 namespace Web.DTO
 {
@@ -14,6 +15,9 @@ namespace Web.DTO
         [MaxLength(135, ErrorMessage = "Description must be less then 35 characters")]
         public string Description { get; set; }
         
+        [DataType(DataType.Upload)]
+        [MaxFileSize(5 * 1024 * 1024)]
+        [AllowedExtensions(new [] {".jpg", ".jpeg", ".png", ".webp", ".gif"})]
         public IFormFile Image { get; set; }
         public string ImageUrl { get; set; }
         

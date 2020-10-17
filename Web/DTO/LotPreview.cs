@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Data.DTO
+namespace Web.DTO
 {
     public class LotPreview
     {

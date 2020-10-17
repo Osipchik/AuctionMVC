@@ -58,7 +58,7 @@ async function onBackClick(){
         method: 'post',
         headers: getFormHeader()
     })
-
+    
     console.log(rate)
 }
 

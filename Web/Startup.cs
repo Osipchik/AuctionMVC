@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Data;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
@@ -28,7 +29,7 @@ namespace Web
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+
         public void ConfigureServices(IServiceCollection services)
         {
             var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
@@ -59,13 +60,15 @@ namespace Web
 
             services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
 
+            services.AddAutoMapper(typeof(Startup));
+
             
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ILotRepository, LotRepository>();
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -91,10 +94,6 @@ namespace Web
             app.UseAuthorization();
             
             
-            // app.UseHangfireServer(new BackgroundJobServerOptions
-            // {
-            //     SchedulePollingInterval = TimeSpan.FromSeconds(5)
-            // });
             app.UseHangfireServer();
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {

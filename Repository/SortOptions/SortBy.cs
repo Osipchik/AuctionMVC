@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Data.SortOptions
+namespace Repository.SortOptions
 {
     public enum SortBy
     {

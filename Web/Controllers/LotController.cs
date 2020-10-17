@@ -141,8 +141,8 @@ namespace Web.Controllers
                 {
                     await _repository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
                     var amount = lot.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount;
-                    lot.Funded = amount ?? 0m;
-                
+                    // lot.Funded = amount ?? 0m;
+
                     ViewData["UserId"] = HttpContext.UserId();
                     return View(lot);
                 }
@@ -169,10 +169,10 @@ namespace Web.Controllers
                 lot.IsAvailable = true;
                 await _repository.Update(lot);
 
-                BackgroundJob.Schedule(
-                    () => BackgroundTask(lotId),
-                    lot.EndAt - DateTime.UtcNow
-                );
+                // BackgroundJob.Schedule(
+                //     () => BackgroundTask(lotId),
+                //     lot.EndAt - DateTime.UtcNow
+                // );
             }
             
             return Ok(new {lotId});

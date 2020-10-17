@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Google.Apis.Auth.OAuth2;
@@ -12,9 +11,6 @@ namespace Service
 {
     public class GoogleCloudStorage : ICloudStorage
     {
-        private const int MaxFileSize = 20 * 1024 * 1024;
-        private readonly string[] AllowedFileExtensions = {".JPG", ".JPEG", ".WEBP", ".PNG", ".GIF", ".TIFF"};
-        
         private readonly StorageClient _storageClient;
         private readonly string _bucketName;
 
@@ -42,14 +38,6 @@ namespace Service
         {
             var filename = imageUrl.Substring(imageUrl.LastIndexOf("/") + 1);
             await _storageClient.DeleteObjectAsync(_bucketName, filename);
-        }
-
-        public bool IsFileValid(IFormFile imageFile)
-        {
-            var sizeIsValid = imageFile.Length <= MaxFileSize;
-            var fileExtension = Path.GetExtension(imageFile.FileName).ToUpper();
-
-            return sizeIsValid && AllowedFileExtensions.Contains(fileExtension);
         }
 
         public string CreateFileName(IFormFile file, string userId)

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Data;
-using Data.DTO;
-using Data.SortOptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Repository.SortOptions;
 
 namespace Repository
 {
@@ -67,22 +66,22 @@ namespace Repository
             return await Context.Lots.SingleOrDefaultAsync(i => i.Id == lotId && i.AppUserId == userId);
         }
 
-        public async Task<List<LotPreview>> FindRange(IQueryable<Lot> queryable, int take, int skip)
+        public async Task<List<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip)
         {
-            return await queryable.Skip(skip).Take(take).Include(i => i.Rates)
-                .Select(i => new LotPreview
-                {
-                    Id = i.Id,
-                    Title = i.Title,
-                    Description = i.Description,
-                    ImageUrl = i.ImageUrl,
-                    LunchAt = i.LunchAt,
-                    EndAt = i.EndAt,
-                    Goal = i.Goal,
-                    Funded = i.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault().Amount
-                }).ToListAsync();
+            return await queryable.Skip(skip).Take(take).Include(i => i.Rates).ToListAsync();
+            // .Select(i => new LotPreview
+            // {
+            // Id = i.Id,
+            // Title = i.Title,
+            // Description = i.Description,
+            // ImageUrl = i.ImageUrl,
+            // LunchAt = i.LunchAt,
+            // EndAt = i.EndAt,
+            // Goal = i.Goal,
+            //     Funded = i.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault().Amount
+            // }).ToListAsync();
         }
-        
+
         private IQueryable<Lot> Order(SortBy sortBy, Expression<Func<Lot, bool>> expression)
         {
             var query = Context.Lots.Where(expression);
@@ -93,7 +92,8 @@ namespace Repository
                 SortBy.Name => query.OrderBy(i => i.Title),
                 SortBy.DistinctName => query.OrderByDescending(i => i.Title),
                 SortBy.Goal => query.OrderBy(i => i.Goal),
-                SortBy.Funded => query.OrderBy(i => i.Funded),
+                SortBy.Funded => query.Include(x => x.Rates)
+                    .OrderBy(i => i.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault().Amount),
                 _ => query
             };
 

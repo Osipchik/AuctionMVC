@@ -6,6 +6,7 @@
 
 @{
     ViewBag.Title = "Lot";
+    ViewBag.Price = Model.Rates?.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount ?? 0m;
 }
 
 <link rel="stylesheet" href="~/css/create.css"/>
@@ -41,7 +42,7 @@
             <div class="page-info">
                 <p class="text-info type-28">
                     current price US$
-                    <span id="funded-span">@Model.Funded</span>
+                    <span id="funded-span">@ViewBag.Price</span>
                 </p>
                 <p class="text-muted">Starting price US$ @Model.Goal goal</p>
             </div>
@@ -66,18 +67,22 @@
             }
 
         </div>
-        <div class="text-center my-3">
-            @Html.AntiForgeryToken()
-            @Html.HiddenFor(i => i.Id)
-            <div class="input-group mb-2">
-                <input type="text" class="form-control" id="rate-input" value="@Model.Funded">
-                <div class="input-group-append bid-group">
-                    <button class="btn btn-outline-secondary" onclick="add()">+</button>
-                    <button class="btn btn-outline-secondary" onclick="minus()">-</button>
+        @if (Model.IsAvailable)
+        {
+            <div class="text-center my-3">
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(i => i.Id)
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="rate-input" value="@ViewBag.Price">
+                    <div class="input-group-append bid-group">
+                        <button class="btn btn-outline-secondary" onclick="add()">+</button>
+                        <button class="btn btn-outline-secondary" onclick="minus()">-</button>
+                    </div>
                 </div>
+                <button type="button" class="btn btn-success w-100" onclick="onBackClick()">Back this project</button>
             </div>
-            <button type="button" class="btn btn-success w-100" onclick="onBackClick()">Back this project</button>
-        </div>
+        }
+
         @if (User.IsInRole(Constants.AdminRole) || (string) ViewData["UserId"] == Model.AppUserId)
         {
             <div class="row d-flex justify-content-center">
@@ -110,7 +115,10 @@
                 </form>
             </div>
         }
-        <button type="button" class="btn btn-success w-100" onclick="onLaunchClick()">Launch</button>
+        @if (!Model.IsAvailable)
+        {
+            <button type="button" class="btn btn-success w-100" onclick="onLaunchClick()">Launch</button>
+        }
     </div>
 </div>
 

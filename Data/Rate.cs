@@ -6,6 +6,7 @@ namespace Data
 {
     public class Rate : Entity
     {
+        [DataType(DataType.Currency)]
         public decimal Amount { get; set; }
         
         [DataType(DataType.DateTime)]
@@ -14,6 +15,5 @@ namespace Data
         
         public string AppUserId { get; set; }
         public int LotId { get; set; }
-        // public AppUser AppUser { get; set; }
     }
 }

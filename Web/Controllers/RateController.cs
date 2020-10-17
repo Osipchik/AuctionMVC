@@ -29,8 +29,8 @@ namespace Web.Controllers
             if (lot != null)
             {
                 await _lotRepository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
-
-                if (rate > lot.Rates.Max(i => i.Amount))
+                
+                if (lot.Rates.Count == 0 || rate > lot.Rates.Max(i => i.Amount))
                 {
                     var newRate = new Rate
                     {

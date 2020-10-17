@@ -8,9 +8,7 @@ namespace Service
         Task<string> UploadFileAsync(IFormFile imageFile, string filename);
         
         Task DeleteFileAsync(string imageUrl);
-
-        bool IsFileValid(IFormFile imageFile);
-
+        
         string CreateFileName(IFormFile imageFile, string userId);
     }
 }

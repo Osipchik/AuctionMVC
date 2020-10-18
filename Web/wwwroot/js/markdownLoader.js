@@ -1,4 +1,6 @@
-﻿
+﻿"use strict"
+
+
 document.getElementById('prev').addEventListener('click', loadMarkdown);
 
 async function loadMarkdown(){

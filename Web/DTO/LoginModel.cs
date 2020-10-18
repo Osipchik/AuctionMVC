@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Web.DTO
 {
@@ -15,5 +18,9 @@ namespace Web.DTO
 
         [Display(Name = "Remember me")]
         public bool RememberMe { get; set; }
+        
+        public string ReturnUrl { get; set; }
+        
+        public IList<AuthenticationScheme> ExternalLogins { get; set; }
     }
 }

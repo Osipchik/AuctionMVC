@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Data;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Serialization;
 using Repository;
 using Service;
+using Web.Hubs;
 using Westwind.AspNetCore.Markdown;
 
 namespace Web
@@ -45,9 +41,19 @@ namespace Web
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
             });
-            
+
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
+
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    var googleAuthNSection = Configuration.GetSection("Authentication:Google");
+                    
+                    options.ClientId = googleAuthNSection["ClientId"];
+                    options.ClientSecret = googleAuthNSection["ClientSecret"];
+                    options.SignInScheme = IdentityConstants.ExternalScheme;
+                });
             
             services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
@@ -56,13 +62,14 @@ namespace Web
                 })
                 .AddRazorRuntimeCompilation()
                 .AddApplicationPart(typeof(MarkdownPageProcessorMiddleware).Assembly);
-
+            
+            services.AddSignalR();
 
             services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
 
             services.AddAutoMapper(typeof(Startup));
 
-            
+
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ILotRepository, LotRepository>();
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
@@ -103,15 +110,8 @@ namespace Web
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("update",
-                    "UpdateLot/Id-{lotId}",
-                    new { Controller = "Lot", action = "Update" });
-                
-                endpoints.MapControllerRoute("lot",
-                    "Lot/Id-{lotId}",
-                    new { Controller = "Lot", action = "Get" });
-
                 endpoints.MapDefaultControllerRoute();
+                endpoints.MapHub<CommentHub>("/commentsHub");
             });
         }
     }

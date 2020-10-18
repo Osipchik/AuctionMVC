@@ -1,4 +1,5 @@
-﻿
+﻿"use strict"
+
 function changeUrl(newUrl){
     if (history.pushState) {
         window.history.pushState('', '', newUrl);

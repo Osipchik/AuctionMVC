@@ -42,12 +42,10 @@ namespace Web.TagHelpers
                 var item = new TagBuilder("li");
                 var tag = new TagBuilder("p");
                 PageUrlValues["page"] = i;
-                // tag.Attributes["href"] = urlHelper.Action(PageAction, PageUrlValues);
                 tag.Attributes["data-href"] = urlHelper.Action(PageAction, PageUrlValues);
                 if (PageClassesEnabled) {
                     tag.AddCssClass(PageClass);
-                    item.AddCssClass(i == PageModel.CurrentPage
-                        ? PageClassSelected : PageClassNormal);
+                    item.AddCssClass(i == PageModel.CurrentPage ? PageClassSelected : PageClassNormal);
                 }
                 tag.InnerHtml.Append(i.ToString());
                 item.InnerHtml.AppendHtml(tag);

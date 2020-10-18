@@ -27,6 +27,21 @@
             </label>
         </div>
 
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+        <button class="btn btn-primary btn-block" type="submit">Login</button>
     </form>
+    <div>
+        @if (Model.ExternalLogins.Count != 0)
+        {
+            <form class="form-signin" method="post" asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl">
+                <button class="btn btn-light btn-block" type="submit" value="@Model.ExternalLogins[0].Name" name="provider">
+                    <div class="row">
+                        <div class="position-relative w-30 text-right">
+                            <object type="image/svg+xml" class="position-absolute center w-25" data="~/google_icon.svg"></object>
+                        </div>
+                        <span class="">Log in with Google</span>
+                    </div>
+                </button>
+            </form>
+        }
+    </div>
 </div>

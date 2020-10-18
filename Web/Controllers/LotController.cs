@@ -81,9 +81,11 @@ namespace Web.Controllers
                     await AddImage(lot, model.Image);
                     await _repository.Update(lot);   
                 }
+                
+                return RedirectToAction("Get", new {lotId});
             }
-            
-            return RedirectToAction("Get", new {lotId});
+
+            return View(model);
         }
         
         private void SetLotModel(CreateLotModel model, Lot lot)
@@ -140,9 +142,6 @@ namespace Web.Controllers
                 if (lot.IsAvailable || isOwner)
                 {
                     await _repository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
-                    var amount = lot.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount;
-                    // lot.Funded = amount ?? 0m;
-
                     ViewData["UserId"] = HttpContext.UserId();
                     return View(lot);
                 }

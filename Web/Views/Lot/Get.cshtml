@@ -19,6 +19,8 @@
     });
 }
 
+<input type="hidden" asp-for="Id">
+
 <div class="row">
     <div class="col-lg-7 p-0">
         <div class="image-container">
@@ -71,12 +73,11 @@
         {
             <div class="text-center my-3">
                 @Html.AntiForgeryToken()
-                @Html.HiddenFor(i => i.Id)
                 <div class="input-group mb-2">
                     <input type="text" class="form-control" id="rate-input" value="@ViewBag.Price">
                     <div class="input-group-append bid-group">
-                        <button class="btn btn-outline-secondary" onclick="add()">+</button>
-                        <button class="btn btn-outline-secondary" onclick="minus()">-</button>
+                        <button class="btn btn-light border" onclick="add()">+</button>
+                        <button class="btn btn-light border" onclick="minus()">-</button>
                     </div>
                 </div>
                 <button type="button" class="btn btn-success w-100" onclick="onBackClick()">Back this project</button>
@@ -122,8 +123,21 @@
     </div>
 </div>
 
-<div class="mx-auto story">
-    @Markdown.ParseHtmlString(Model.Story)
+<ul class="nav justify-content-center mb-3" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Story</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Comments</a>
+    </li>
+</ul>
+<div class="tab-content mx-auto story" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+        @Markdown.ParseHtmlString(Model.Story)
+    </div>
+    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+        @await Html.PartialAsync("_Comments")
+    </div>
 </div>
 
 @section Scripts

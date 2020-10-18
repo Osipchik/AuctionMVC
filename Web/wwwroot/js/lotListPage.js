@@ -1,4 +1,6 @@
-﻿async function onChange(){
+﻿"use strict"
+
+async function onChange(){
     let show = document.getElementById('show-filter').value;
     let sort = document.getElementById('sort-filter').value;
     let search = document.getElementById('search-input').value;

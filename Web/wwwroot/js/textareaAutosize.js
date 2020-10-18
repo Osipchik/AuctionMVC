@@ -1,13 +1,12 @@
-﻿let textarea = document.querySelectorAll('textarea');
+﻿"use strict"
 
-textarea.forEach(i => {
-    i.addEventListener('keydown', autosize);
-    setSize(i);
-});
+let textarea = document.querySelectorAll('textarea');
 
-function autosize(){
+textarea.forEach(i => i.addEventListener('keydown', () => autosize(i)));
+
+function autosize(element){
     setTimeout(function(){
-        setSize(this)
+        setSize(element)
     },0);
 }
 

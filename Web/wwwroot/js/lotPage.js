@@ -1,4 +1,7 @@
-﻿function onDelete(){
+﻿"use strict"
+
+
+function onDelete(){
     $('#confirmDelete').show();
     $('#delete').hide();
 }

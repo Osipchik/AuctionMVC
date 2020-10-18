@@ -8,11 +8,11 @@ namespace Repository
     {
         public DbSet<Lot> Lots { get; set; }
         public DbSet<Rate> Rates { get; set; }
-        // public DbSet<AppUser> AppUsers { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Category> Categories { get; set; }
         
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-            // Database.EnsureDeleted();
             Database.EnsureCreated();
         }
         
@@ -33,6 +33,18 @@ namespace Repository
                 .HasMany(r => r.Rates)
                 .WithOne()
                 .HasForeignKey(i => i.LotId);
+
+            modelBuilder.Entity<Lot>()
+                .HasOne(i => i.Category)
+                .WithMany(i => i.Lots);
+
+            modelBuilder.Entity<Lot>()
+                .HasMany(i => i.Comments)
+                .WithOne();
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(i => i.AppUser)
+                .WithOne();
         }
     }
 }

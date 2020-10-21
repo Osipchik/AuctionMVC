@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Data;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
@@ -16,6 +17,7 @@ namespace Web.Controllers
     {
         private readonly ILotRepository _repository;
         private readonly ICloudStorage _cloudStorage;
+        private readonly IMapper _mapper;
         
         public LotController(ILotRepository repository, ICloudStorage cloudStorage)
         {
@@ -40,7 +42,7 @@ namespace Web.Controllers
                 var lot = new Lot
                 {
                     AppUserId = HttpContext.UserId(),
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.UtcNow
                 };
             
                 SetLotModel(model, lot);
@@ -92,8 +94,8 @@ namespace Web.Controllers
         {
             lot.Title = model.Title;
             lot.Description = model.Description;
-            lot.LunchAt = model.LunchAt;
-            lot.EndAt = model.EndAt;
+            lot.LunchAt = model.LunchAt.ToUniversalTime();
+            lot.EndAt = model.EndAt.ToUniversalTime();
             lot.Goal = model.Goal;
             lot.Story = model.Story;
         }
@@ -163,24 +165,40 @@ namespace Web.Controllers
         public async Task<IActionResult> LaunchProject(int lotId)
         {
             var lot = await _repository.Find(lotId, HttpContext);
-            if (lot != null)
+            if (lot != null && IsLotReady(lot))
             {
                 lot.IsAvailable = true;
                 await _repository.Update(lot);
-
+      
                 // BackgroundJob.Schedule(
                 //     () => BackgroundTask(lotId),
                 //     lot.EndAt - DateTime.UtcNow
                 // );
+                
+                return Ok(new {lotId});
             }
             
-            return Ok(new {lotId});
+            return Accepted();
         }
 
         private async Task BackgroundTask(int id)
         {
             var lot = await _repository.Find(id);
             await _repository.Delete(lot);
+        }
+
+        private bool IsLotReady(Lot lot)
+        {
+            var model = new LotModel(lot);
+
+            var isAnyEmpty = model.GetType().GetProperties()
+                .Where(i => i.PropertyType == typeof(string))
+                .Select(i => (string) i.GetValue(model))
+                .Any(string.IsNullOrEmpty);
+
+            var isDateValid = model.LunchAt > DateTime.UtcNow || model.EndAt <= model.LunchAt.AddHours(4);
+
+            return !isAnyEmpty && isDateValid;
         }
     }
 }

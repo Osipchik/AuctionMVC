@@ -1,7 +1,4 @@
-﻿@using Data
-@inject SignInManager<AppUser> SignInManager;
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -12,56 +9,9 @@
     <link rel="stylesheet" href="~/css/site.css"/>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Auction</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+    
+    <partial name="_Nav"/>
 
-                <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
-                    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Lot" asp-action="Create">CreateLot</a>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav ml-auto">
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-                                    @User.Identity.Name
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="#">Account</a>
-                                    <a class="dropdown-item" href="#">my lot</a>
-                                    <div class="dropdown-divider"></div>
-                                    <form method="post" asp-action="Logout" asp-controller="Account">
-                                        <button type="submit" class="dropdown-item">
-                                            Logout
-                                        </button>
-                                    </form>
-                                </div>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a asp-controller="Account" asp-action="Login" class="nav-link">Log in</a>
-                            </li>
-                            <li class="nav-item">
-                                <a asp-controller="Account" asp-action="Register" class="nav-link">Register</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
     <section>
         <main role="main" class="pb-3">
             @RenderBody()

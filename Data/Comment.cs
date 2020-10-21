@@ -11,6 +11,8 @@ namespace Data
         [DataType(DataType.DateTime)]
         public DateTime CreatedAt { get; set; }
         
+        public int LotId { get; set; }
+        
         public string AppUserId { get; set; }
         public AppUser AppUser { get; set; }
     }

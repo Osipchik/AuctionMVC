@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Web.DTO;
 
+
 namespace Web.Controllers
 {
     public class AccountController : Controller
@@ -139,30 +140,28 @@ namespace Web.Controllers
             {
                 return LocalRedirect(returnUrl);
             }
-            else
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (email != null)
             {
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                if (email != null)
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
                 {
-                    var user = await _userManager.FindByEmailAsync(email);
-
-                    if (user == null)
+                    user = new AppUser
                     {
-                        user = new AppUser
-                        {
-                            UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
-                            Email = info.Principal.FindFirstValue(ClaimTypes.Email),
-                            EmailConfirmed = true
-                        };
+                        UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
+                        Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                        EmailConfirmed = true
+                    };
 
-                        await _userManager.CreateAsync(user);
-                    }
-
-                    await _userManager.AddLoginAsync(user, info);
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-
-                    return LocalRedirect(returnUrl);
+                    await _userManager.CreateAsync(user);
                 }
+
+                await _userManager.AddLoginAsync(user, info);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                return LocalRedirect(returnUrl);
             }
 
             ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";

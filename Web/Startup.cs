@@ -1,3 +1,5 @@
+using System;
+using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
 using Data;
 using Hangfire;
@@ -30,7 +32,7 @@ namespace Web
         {
             var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
-
+            
             services.AddMarkdown();
             services.AddAntiforgery(x => x.HeaderName = "X-ANTI-FORGERY-TOKEN");
             
@@ -42,6 +44,16 @@ namespace Web
                 options.Password.RequireNonAlphanumeric = false;
             });
 
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Home/";
+                options.SlidingExpiration = true;
+            });
+            
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>();
 
@@ -52,7 +64,6 @@ namespace Web
                     
                     options.ClientId = googleAuthNSection["ClientId"];
                     options.ClientSecret = googleAuthNSection["ClientSecret"];
-                    options.SignInScheme = IdentityConstants.ExternalScheme;
                 });
             
             services.AddControllersWithViews()
@@ -99,8 +110,8 @@ namespace Web
             
             app.UseAuthentication();
             app.UseAuthorization();
-            
-            
+
+
             app.UseHangfireServer();
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {

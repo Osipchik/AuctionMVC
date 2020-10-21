@@ -92,6 +92,30 @@ async function onLaunchClick(){
     
     console.log(response);
     if(response.ok){
-        console.log(await response.json())
+        switch (response.status){
+            case 202: console.log("no"); break;
+            // default: console.log(await response.json());
+        }
+    }
+    
+}
+
+
+
+async function fetchCommentsView(url){
+
+    let response = await fetch(window.location.origin + '/Comment/GetPage' + url);
+    if (response.ok){
+        
+        // document.querySelectorAll('[data-href]')
+        //     .forEach(i => i.removeEventListener('click', onPageClick))
+
+        document.getElementById('comments').innerHTML = await response.text();
+
+        // document.querySelectorAll('[data-href]')
+        //     .forEach(i => i.addEventListener('click', onPageClick))
+        //
+        // document.getElementById('items-count').innerHTML =
+        //     document.getElementById('PagingInfo_TotalPages').value;
     }
 }

@@ -41,10 +41,6 @@ namespace Repository
             modelBuilder.Entity<Lot>()
                 .HasMany(i => i.Comments)
                 .WithOne();
-
-            modelBuilder.Entity<Comment>()
-                .HasOne(i => i.AppUser)
-                .WithOne();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Data;
 
-namespace Repository
+namespace Repository.Interfaces
 {
     public interface IRepository<TEntity>
         where TEntity : Entity

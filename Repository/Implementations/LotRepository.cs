@@ -6,45 +6,19 @@ using System.Threading.Tasks;
 using Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Repository.Interfaces;
 using Repository.SortOptions;
 
-namespace Repository
+namespace Repository.Implementations
 {
-    public class LotRepository : ILotRepository
+    public class LotRepository : Repository<Lot>, ILotRepository
     {
-        // public readonly AppDbContext Context;
-        public AppDbContext Context { get; set; }
+        public LotRepository(AppDbContext context) : base(context) { }
 
-        public LotRepository(AppDbContext context)
+
+        public async ValueTask<int> GetTotalCount()
         {
-            Context = context;
-        }
-
-        public async ValueTask<int> Count() =>
-            await Context.Lots.CountAsync();
-
-        public async Task<Lot> Add(Lot entity)
-        {
-            await Context.Lots.AddAsync(entity);
-            await Context.SaveChangesAsync();
-            
-            return entity;
-        }
-
-        public async Task<Lot> Update(Lot entity)
-        {
-            Context.Lots.Update(entity);
-            await Context.SaveChangesAsync();
-
-            return entity;
-        }
-
-        public async Task<Lot> Delete(Lot entity)
-        {
-            Context.Lots.Remove(entity);
-            await Context.SaveChangesAsync();
-
-            return entity;
+            return await Context.Lots.CountAsync();
         }
 
         public async Task<Lot> Find(int lotId, HttpContext context)
@@ -55,31 +29,10 @@ namespace Repository
             
             return isValid ? lot : null;
         }
-        
-        public async Task<Lot> Find(int id)
-        {
-            return await Context.Lots.FindAsync(id);
-        }
-
-        public async Task<Lot> FindUserLot(int lotId, string userId)
-        {
-            return await Context.Lots.SingleOrDefaultAsync(i => i.Id == lotId && i.AppUserId == userId);
-        }
 
         public async Task<List<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip)
         {
             return await queryable.Skip(skip).Take(take).Include(i => i.Rates).ToListAsync();
-            // .Select(i => new LotPreview
-            // {
-            // Id = i.Id,
-            // Title = i.Title,
-            // Description = i.Description,
-            // ImageUrl = i.ImageUrl,
-            // LunchAt = i.LunchAt,
-            // EndAt = i.EndAt,
-            // Goal = i.Goal,
-            //     Funded = i.Rates.OrderByDescending(c => c.CreatedAt).FirstOrDefault().Amount
-            // }).ToListAsync();
         }
 
         private IQueryable<Lot> Order(SortBy sortBy, Expression<Func<Lot, bool>> expression)
@@ -113,6 +66,11 @@ namespace Repository
             };
             
             return query;
+        }
+
+        public async Task LoadRates(Lot lot)
+        {
+            await Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
         }
     }
 }

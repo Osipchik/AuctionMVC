@@ -5,6 +5,7 @@ using Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
+using Repository.Interfaces;
 
 namespace Web.Controllers
 {
@@ -28,7 +29,7 @@ namespace Web.Controllers
             
             if (lot != null)
             {
-                await _lotRepository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
+                await _lotRepository.LoadRates(lot);
                 
                 if (lot.Rates.Count == 0 || rate > lot.Rates.Max(i => i.Amount))
                 {
@@ -52,7 +53,7 @@ namespace Web.Controllers
         public async Task<IActionResult> GetLotFunding(int lotId)
         {
             var lot = await _lotRepository.Find(lotId);
-            await _lotRepository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
+            await _lotRepository.LoadRates(lot);
             
             return Ok(new
             {

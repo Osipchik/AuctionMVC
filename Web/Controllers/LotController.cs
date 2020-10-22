@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
+using Repository.Interfaces;
 using Service;
 using Web.DTO;
 
@@ -17,12 +18,13 @@ namespace Web.Controllers
     {
         private readonly ILotRepository _repository;
         private readonly ICloudStorage _cloudStorage;
-        private readonly IMapper _mapper;
         
         public LotController(ILotRepository repository, ICloudStorage cloudStorage)
         {
             _repository = repository;
             _cloudStorage = cloudStorage;
+            
+            
         }
 
         [HttpGet]
@@ -143,7 +145,7 @@ namespace Web.Controllers
                 
                 if (lot.IsAvailable || isOwner)
                 {
-                    await _repository.Context.Entry(lot).Collection(i => i.Rates).LoadAsync();
+                    await _repository.LoadRates(lot);
                     ViewData["UserId"] = HttpContext.UserId();
                     return View(lot);
                 }

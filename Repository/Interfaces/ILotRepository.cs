@@ -5,14 +5,14 @@ using Data;
 using Microsoft.AspNetCore.Http;
 using Repository.SortOptions;
 
-namespace Repository
+namespace Repository.Interfaces
 {
     public interface ILotRepository : IRepository<Lot>
     {
-        AppDbContext Context { get; set; }
-        ValueTask<int> Count();
+        ValueTask<int> GetTotalCount();
         Task<Lot> Find(int lotId, HttpContext context);
         Task<List<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip);
         IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show, HttpContext context);
+        Task LoadRates(Lot lot);
     }
 }

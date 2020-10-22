@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Repository;
+using Repository.Interfaces;
 using Web.DTO;
 
 namespace Web.Hubs

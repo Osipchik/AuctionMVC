@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Serialization;
 using Repository;
+using Repository.Implementations;
+using Repository.Interfaces;
 using Service;
 using Web.Hubs;
 using Westwind.AspNetCore.Markdown;
@@ -82,6 +84,7 @@ namespace Web
 
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddTransient<ICommentRepository, CommentRepository>();
             services.AddTransient<ILotRepository, LotRepository>();
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
         }

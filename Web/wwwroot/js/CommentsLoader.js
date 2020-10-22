@@ -19,17 +19,8 @@ async function loadComments(){
         return
     }
 
-    let response = await fetch(window.location.origin + "/Comment/GetPage?page=1", {
-        method: 'get'
-    })
-    
-    if (response.ok){
-        isLoaded = true;
-        let a = await response.text();
-        console.log(a);
-        document.getElementById('comments').innerHTML = a;
-
-        connect();
+    if (await load()){
+        connect();   
     }
 }
 
@@ -48,7 +39,8 @@ function postComment(){
         message: document.getElementById("comment-content").value,
         lotId: lotId
     }
-    
+
+    document.getElementById("comment-content").value = '';
     console.log(data)
 
     connection.invoke("PostComment", data).catch(function (err) {
@@ -57,6 +49,8 @@ function postComment(){
 }
 
 connection.on("ReceiveComment", function (message) {
+    skip += 1;
+    
     let msg = message.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     let li = document.createElement("li");
@@ -76,3 +70,49 @@ connection.on("ReceiveComment", function (message) {
 
     document.getElementById("comments-list").prepend(li);
 });
+
+
+window.addEventListener('scroll', loadByMark)
+
+let take = 10;
+let skip = 0;
+let isOnLoad = false;
+
+async function load(){
+    if (isOnLoad){
+        return
+    }
+    
+    isOnLoad = true;
+    
+    let urlRequest = `/Comment/GetComments?lotId=${lotId}&take=${take}&skip=${skip}`;
+    let response = await fetch(window.location.origin + urlRequest, {
+        method: 'get',
+        headers: {'Accept': 'application/json', "Content-Type": "application/json"}
+    })
+
+    console.log(response)
+
+    if (response.ok && response.status === 200){
+        isOnLoad = false;
+        skip += take;
+        
+        let el = document.createElement('div');
+        el.innerHTML = await response.text();
+        document.getElementById('comments').appendChild(el);
+        
+        return true;
+    }
+    
+    return false;
+}
+
+
+async function loadByMark(){
+    let mark = document.getElementById('last-comment');
+    if (mark !== null && mark.style['display'] !== 'none'){
+        mark.remove();
+        console.log(123)
+        await load();
+    }
+}

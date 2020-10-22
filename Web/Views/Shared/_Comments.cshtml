@@ -1,9 +1,13 @@
 ﻿@model CommentsView
 
+@{
+    var url = $"/Comment/GetComments?lotId={Model.LotId}&take={Model.Take}&skip={Model.Skip}";
+}
+
 <ul class="list-unstyled" id="comments-list">
     @foreach (var i in Model.Comments)
     {
-        <li class="media">
+        <li class="media my-3">
             <div class="media-body">
                 <h5 class="mt-0 mb-1">@i.AppUser.UserName</h5>
                 @i.Text
@@ -11,3 +15,7 @@
         </li>
     }
 </ul>
+
+<div id="last-comment" data-url="@url">
+    
+</div>

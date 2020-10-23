@@ -35,7 +35,13 @@ namespace Web
         public void ConfigureServices(IServiceCollection services)
         {
             var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
+            // services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
+            
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("Web"));
+            });
+
             
             services.AddMarkdown();
             services.AddAntiforgery(x => x.HeaderName = "X-ANTI-FORGERY-TOKEN");

@@ -1,0 +1,15 @@
+﻿@model IEnumerable<string>
+
+<div>
+    <div class="row">
+        <p class="pr-3">Your roles:</p>
+        <ul class="list-inline">
+            @foreach (var i in Model)
+            {
+                <li class="list-inline-item">@i</li>
+            }
+        </ul>
+    </div>
+    
+
+</div>

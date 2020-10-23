@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.SignalR;
 using Repository;
 using Repository.Interfaces;
 using Web.DTO;
+using Web.DTO.Comment;
 
 namespace Web.Hubs
 {

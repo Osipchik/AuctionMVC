@@ -1,4 +1,4 @@
-﻿@model CommentsView
+﻿@model Web.DTO.Comment.CommentsView
 
 @{
     var url = $"/Comment/GetComments?lotId={Model.LotId}&take={Model.Take}&skip={Model.Skip}";
@@ -8,8 +8,13 @@
     @foreach (var i in Model.Comments)
     {
         <li class="media my-3">
-            <div class="media-body">
-                <h5 class="mt-0 mb-1">@i.AppUser.UserName</h5>
+            <div class="media-body comment-card">
+                <div class="row px-3">
+                    <h5 class="mt-0 mb-1 d-flex flex-grow-1">@i.AppUser.UserName</h5>
+                    <div class="position-relative w-20p px-3">
+                        <object type="image/svg+xml" class="position-absolute center w-20p delete-button" data="~/trash.svg"></object>
+                    </div>
+                </div>
                 @i.Text
             </div>
         </li>

@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 using Repository;
 using Repository.Interfaces;
 using Service;
+using Service.Interfaces;
 using Web.DTO;
+using Web.DTO.Lot;
 
 namespace Web.Controllers
 {

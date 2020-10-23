@@ -1,6 +1,5 @@
 ﻿"use strict"
 
-// document.getElementById("post-comment-button").disabled = true;
 document.getElementById('comments-link')
     .addEventListener('click', async () => await loadComments());
 
@@ -30,6 +29,7 @@ function connect(){
             return console.error(err.toString());
         })
 
+    console.log('connect');
     document.getElementById('post-comment-button')
         .addEventListener('click', postComment);
 }
@@ -62,12 +62,12 @@ connection.on("ReceiveComment", function (message) {
     let h = document.createElement("h5");
     h.classList.add('mt-0',  'mb-1');
     h.textContent = message.appUser.userName;
-
+    
     div.textContent = msg;
     div.prepend(h)
-
+    
     li.appendChild(div);
-
+    
     document.getElementById("comments-list").prepend(li);
 });
 
@@ -90,10 +90,8 @@ async function load(){
         method: 'get',
         headers: {'Accept': 'application/json', "Content-Type": "application/json"}
     })
-
-    console.log(response)
-
-    if (response.ok && response.status === 200){
+    
+    if (response.ok){
         isOnLoad = false;
         skip += take;
         

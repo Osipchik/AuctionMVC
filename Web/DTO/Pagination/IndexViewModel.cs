@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Repository.SortOptions;
+using Web.DTO.Lot;
 
 namespace Web.DTO.Pagination
 {

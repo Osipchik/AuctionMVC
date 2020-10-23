@@ -2,6 +2,8 @@
 using AutoMapper;
 using Data;
 using Web.DTO;
+using Web.DTO.Comment;
+using Web.DTO.Lot;
 
 namespace Web.Mapping
 {

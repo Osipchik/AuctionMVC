@@ -1,0 +1,17 @@
+﻿@model EmailService.MailMessage
+
+@{
+    Layout = "_EmailLayoutHtml";
+    ViewContext.ViewData["EmailTitle"] = "Hello World!";
+}
+
+<h2>Welocme to Kickstarter!</h2>
+<br>
+
+<p class="t-24" id="name">Hey @Model.Name!</p>
+<p class="t-16">We're excited to have you get started. First you ned to confirm your account. Just press the button below.</p>
+
+<div class="pt-3 mb-3 text-center">
+    <a href="@Model.Message" class="btn btn-primary" id="link">Confirm Account</a>
+</div>
+    

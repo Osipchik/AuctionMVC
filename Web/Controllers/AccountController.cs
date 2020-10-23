@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Web.DTO;
+using Web.DTO.Account;
 
 
 namespace Web.Controllers
@@ -50,6 +51,8 @@ namespace Web.Controllers
             
             return View(model);
         }
+        
+        
 
         [HttpPost]
         [ValidateAntiForgeryToken]

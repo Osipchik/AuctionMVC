@@ -9,6 +9,7 @@ using Repository;
 using Repository.Interfaces;
 using Repository.SortOptions;
 using Web.DTO;
+using Web.DTO.Lot;
 using Web.DTO.Pagination;
 
 namespace Web.Controllers

@@ -1,7 +1,7 @@
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using AutoMapper;
 using Data;
+using EmailService;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +14,9 @@ using Newtonsoft.Json.Serialization;
 using Repository;
 using Repository.Implementations;
 using Repository.Interfaces;
-using Service;
+using Service.Implementations;
+using Service.Implementations.EmailService;
+using Service.Interfaces;
 using Web.Hubs;
 using Westwind.AspNetCore.Markdown;
 
@@ -44,6 +46,9 @@ namespace Web
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
+
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
             });
 
             services.ConfigureApplicationCookie(options =>
@@ -57,7 +62,8 @@ namespace Web
             });
             
             services.AddIdentity<AppUser, IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             services.AddAuthentication()
                 .AddGoogle(options =>
@@ -87,6 +93,10 @@ namespace Web
             services.AddTransient<ICommentRepository, CommentRepository>();
             services.AddTransient<ILotRepository, LotRepository>();
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
+            
+            services.AddTransient<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
+            services.AddTransient<IEmailService, EmailSender>();
+            
         }
 
 

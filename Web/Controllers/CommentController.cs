@@ -1,11 +1,12 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Repository;
 using Repository.Interfaces;
 using Web.DTO;
+using Web.DTO.Comment;
 
 namespace Web.Controllers
 {
@@ -44,7 +45,7 @@ namespace Web.Controllers
         }
 
         [HttpDelete]
-        [Authorize]
+        [Authorize(Roles = Constants.AdminRole)]
         public async Task<IActionResult> DeleteComment(int commentId)
         {
             var comment = await _repository.Find(commentId);

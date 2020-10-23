@@ -13,11 +13,17 @@
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Lot" asp-action="Create">CreateLot</a>
+                            <a class="nav-link text-dark" asp-controller="Lot" asp-action="Create">CreateLot</a>
                         </li>
                     }
                 </ul>
                 <ul class="navbar-nav ml-auto">
+                    @if (User.IsInRole("admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Panel">Admin panel</a>
+                        </li>
+                    }
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <li class="nav-item dropdown">

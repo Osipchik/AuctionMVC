@@ -268,3 +268,27 @@ section {
 .w-30{
   width: 30%;
 }
+
+.w-20p {
+  width: 20px
+}
+
+.comment-card {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  transition: background-color 250ms ease-in-out;
+}
+
+.comment-card:hover {
+  background-color: #EEEEEE;
+  padding: 10px;
+}
+
+.delete-button {
+  transition: color 250ms ease-in-out;
+}
+
+.delete-button:hover {
+  color: var(--danger);
+}

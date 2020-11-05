@@ -20,34 +20,34 @@ namespace Web.Controllers
             _repository = repository;
         }
 
-        [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetRate(int lotId, decimal rate)
-        {
-            var lot = await _lotRepository.Find(lotId);
-            
-            if (lot != null)
-            {
-                await _lotRepository.LoadRates(lot);
-                
-                if (lot.Rates.Count == 0 || rate > lot.Rates.Max(i => i.Amount))
-                {
-                    var newRate = new Rate
-                    {
-                        Amount = rate,
-                        CreatedAt = DateTime.UtcNow,
-                        LotId = lotId,
-                        AppUserId = HttpContext.UserId()
-                    };
-
-                    newRate = await _repository.Add(newRate);
-                    return Ok(newRate);
-                }
-            }
-
-            return BadRequest();
-        }
+        // [HttpPost]
+        // [Authorize]
+        // [ValidateAntiForgeryToken]
+        // public async Task<IActionResult> SetRate(int lotId, decimal rate)
+        // {
+        //     var lot = await _lotRepository.Find(lotId);
+        //     
+        //     if (lot != null)
+        //     {
+        //         await _lotRepository.LoadRates(lot);
+        //         
+        //         if (lot.Rates.Count == 0 || rate > lot.Rates.Max(i => i.Amount))
+        //         {
+        //             var newRate = new Rate
+        //             {
+        //                 Amount = rate,
+        //                 CreatedAt = DateTime.UtcNow,
+        //                 LotId = lotId,
+        //                 AppUserId = HttpContext.UserId()
+        //             };
+        //
+        //             newRate = await _repository.Add(newRate);
+        //             return Ok(newRate);
+        //         }
+        //     }
+        //
+        //     return BadRequest();
+        // }
 
         [HttpGet]
         public async Task<IActionResult> GetLotFunding(int lotId)

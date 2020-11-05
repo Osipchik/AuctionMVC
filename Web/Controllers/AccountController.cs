@@ -5,8 +5,10 @@ using Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Web.DTO;
+using Service.Interfaces;
 using Web.DTO.Account;
+using Web.EmailSender;
+using MailMessage = Web.EmailSender.MailMessage;
 
 
 namespace Web.Controllers
@@ -15,11 +17,13 @@ namespace Web.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IEmailService _emailService;
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -39,8 +43,10 @@ namespace Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    await _signInManager.SignInAsync(user, isPersistent:false, model.Password);
-                    return RedirectToAction("index", "Home");
+                    await SendConfirmEmail(user);
+
+                    ViewBag.Alert = $"We send a confirmation email to {model.Email}";
+                    return View(model);
                 }
 
                 foreach (var error in result.Errors)
@@ -51,7 +57,46 @@ namespace Web.Controllers
             
             return View(model);
         }
-        
+
+        private async Task SendConfirmEmail(AppUser user)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var callBackUrl = Url.Action(
+                "ConfirmEmail", 
+                "Account", 
+                new {userId = user.Id, token = token},
+                Request.Scheme);
+                    
+            var message = new MailMessage(user.Email, user.UserName.Split('@')[0], callBackUrl, EmailTypes.ConfirmEmail);
+            await _emailService.Send(message);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (userId == null || token == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                ViewBag.ErrorMessage = $"The User ID {userId} is invalid";
+                return View("Error");
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                return View("ConfirmEmail");
+            }
+
+            ViewBag.ErrorTitle = "Email can't be confirmed";
+            return View("Error");
+        }
         
 
         [HttpPost]
@@ -147,19 +192,7 @@ namespace Web.Controllers
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             if (email != null)
             {
-                var user = await _userManager.FindByEmailAsync(email);
-
-                if (user == null)
-                {
-                    user = new AppUser
-                    {
-                        UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email),
-                        EmailConfirmed = true
-                    };
-
-                    await _userManager.CreateAsync(user);
-                }
+                var user = await UserEnsureCreate(email, info);
 
                 await _userManager.AddLoginAsync(user, info);
                 await _signInManager.SignInAsync(user, isPersistent: false);
@@ -170,6 +203,25 @@ namespace Web.Controllers
             ViewBag.ErrorTitle = $"Email claim not received from: {info.LoginProvider}";
             
             return View("Error");
+        }
+
+        private async Task<AppUser> UserEnsureCreate(string email, ExternalLoginInfo info)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    UserName = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    Email = info.Principal.FindFirstValue(ClaimTypes.Email),
+                    EmailConfirmed = true
+                };
+
+                await _userManager.CreateAsync(user);
+            }
+
+            return user;
         }
     }
 }

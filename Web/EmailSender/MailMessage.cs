@@ -1,4 +1,4 @@
-﻿namespace EmailService
+﻿namespace Web.EmailSender
 {
     public class MailMessage
     {

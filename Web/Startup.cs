@@ -1,7 +1,6 @@
 using System;
 using AutoMapper;
 using Data;
-using EmailService;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,8 +14,8 @@ using Repository;
 using Repository.Implementations;
 using Repository.Interfaces;
 using Service.Implementations;
-using Service.Implementations.EmailService;
 using Service.Interfaces;
+using Web.EmailSender;
 using Web.Hubs;
 using Westwind.AspNetCore.Markdown;
 
@@ -35,12 +34,12 @@ namespace Web
         public void ConfigureServices(IServiceCollection services)
         {
             var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
-            // services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
+            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
             
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("Web"));
-            });
+            // services.AddDbContext<AppDbContext>(options =>
+            // {
+            //     options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("Web"));
+            // });
 
             
             services.AddMarkdown();
@@ -89,6 +88,14 @@ namespace Web
                 .AddApplicationPart(typeof(MarkdownPageProcessorMiddleware).Assembly);
             
             services.AddSignalR();
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("https://localhost")
+                        .AllowCredentials();
+                });
+            });
 
             services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
 
@@ -101,7 +108,7 @@ namespace Web
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
             
             services.AddTransient<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-            services.AddTransient<IEmailService, EmailSender>();
+            services.AddTransient<IEmailService, EmailSender.EmailSender>();
             
         }
 
@@ -125,6 +132,8 @@ namespace Web
             
             app.UseRouting();
 
+            app.UseCors();
+            
             // app.UseSerilogRequestLogging();
             
             app.UseAuthentication();

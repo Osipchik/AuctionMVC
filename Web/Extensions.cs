@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
-namespace Repository
+namespace Web
 {
     public static class Extensions
     {

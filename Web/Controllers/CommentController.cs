@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
@@ -13,12 +15,12 @@ namespace Web.Controllers
     public class CommentController : Controller
     {
         private readonly ICommentRepository _repository;
-        private readonly IMapper _mapper;
+        private readonly IRepository<Lot> _lotRepository;
 
-        public CommentController(ICommentRepository repository, IMapper mapper)
+        public CommentController(ICommentRepository repository, IMapper mapper, IRepository<Lot> lotRepository)
         {
             _repository = repository;
-            _mapper = mapper;
+            _lotRepository = lotRepository;
         }
         
 
@@ -41,7 +43,7 @@ namespace Web.Controllers
                 return PartialView("_Comments", commentView);
             }
 
-            return NoContent();
+            return NotFound();
         }
 
         [HttpDelete]
@@ -57,6 +59,38 @@ namespace Web.Controllers
             }
 
             return NotFound();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostComment(int lotId, string message)
+        {
+            var lot = await _lotRepository.Find(lotId);
+            if (lot != null && !string.IsNullOrWhiteSpace(message))
+            {
+                var comment = new Comment
+                {
+                    AppUserId = HttpContext.UserId(),
+                    CreatedAt = DateTime.UtcNow,
+                    LotId = lotId,
+                    Text = message
+                };
+
+                await _repository.Add(comment);
+                
+                var commentView = new CommentsView
+                {
+                    Comments = await _repository.GetCommentsList(lotId, 10, 0),
+                    Take = 10,
+                    Skip = 0,
+                    LotId = lotId
+                };
+
+                return PartialView("_Comments", commentView);
+            }
+
+            return BadRequest();
         }
     }
 }

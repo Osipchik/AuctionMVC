@@ -6,7 +6,6 @@
 
 @{
     ViewBag.Title = "Lot";
-    ViewBag.Price = Model.Rates?.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount ?? 0m;
 }
 
 <link rel="stylesheet" href="~/css/create.css"/>
@@ -44,9 +43,9 @@
             <div class="page-info">
                 <p class="text-info type-28">
                     current price US$
-                    <span id="funded-span">@ViewBag.Price</span>
+                    <span id="funded-span">@ViewData["Funded"]</span>
                 </p>
-                <p class="text-muted">Starting price US$ @Model.Goal goal</p>
+                <p class="text-muted">Starting price US$ <span id="goal">@Model.Goal</span> goal</p>
             </div>
         </div>
         <div class="page-info">
@@ -74,20 +73,31 @@
             <div class="text-center my-3">
                 @Html.AntiForgeryToken()
                 <div class="input-group mb-2">
-                    <input type="text" class="form-control" id="rate-input" value="@ViewBag.Price">
+                    <input type="text" class="form-control" id="rate-input" value="@ViewData["Funded"]">
                     <div class="input-group-append bid-group">
-                        <button class="btn btn-light border" onclick="add()">+</button>
-                        <button class="btn btn-light border" onclick="minus()">-</button>
+                        <button class="btn btn-light border" id="add-bet">+</button>
+                        <button class="btn btn-light border" id="minus-bet">-</button>
                     </div>
                 </div>
-                <button type="button" class="btn btn-success w-100" onclick="onBackClick()">Back this project</button>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <button type="button" class="btn btn-success w-100" id="back-button">Back this project</button>
+                }
+                else
+                {
+                    <a class="btn btn-success w-100"
+                       asp-controller="Account" asp-action="Login"
+                       data-toggle="tooltip" title="Login to back this project">
+                        Back this project
+                    </a>
+                }
             </div>
         }
 
         @if (User.IsInRole(Constants.AdminRole) || (string) ViewData["UserId"] == Model.AppUserId)
         {
             <div class="row d-flex justify-content-center my-2">
-                @if (!Model.IsAvailable)
+                @if (!Model.IsAvailable || User.IsInRole(Constants.AdminRole))
                 {
                     <a
                         asp-controller="Lot" asp-action="Update" asp-route-lotId="@Model.Id"
@@ -121,7 +131,7 @@
         }
         @if (!Model.IsAvailable)
         {
-            <button type="button" class="btn btn-success w-100" onclick="onLaunchClick()">Launch</button>
+            <button type="button" class="btn btn-success w-100" id="launch-bth">Launch</button>
         }
     </div>
 </div>
@@ -141,13 +151,28 @@
             @Markdown.ParseHtmlString(Model.Story)
         </div>
         <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-            <div class="form-group">
-                <label>Your comment</label>
-                <textarea class="form-control" rows="3" id="comment-content"></textarea>
-                <button type="button" class="btn btn-light mt-2" id="post-comment-button">Post your comment</button>
-            </div>
+            <form>
+                @Html.AntiForgeryToken()
+                <div class="form-group">
+                    <label>Your comment</label>
+                    <textarea class="form-control" rows="3" id="comment-content"></textarea>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button type="button" class="btn btn-light mt-2" id="post-comment-button">Post your comment</button>
+                    }
+                    else
+                    {
+                        <a class="btn btn-light mt-2"
+                           asp-controller="Account" asp-action="Login"
+                           data-toggle="tooltip" title="Login to post comment">
+                            Post your comment
+                        </a>
+                    }
+                </div>
+            </form>
             <div id="comments">
-                
+                <ul class="list-unstyled" id="comments-list">
+                </ul>
             </div>
         </div>
     </div>
@@ -161,7 +186,7 @@ else
 
 @section Scripts
 {
-    <script src="~/js/lotPage.js"></script>
     <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/lotPage.js"></script>
     <script src="~/js/CommentsLoader.js"></script>
 }

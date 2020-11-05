@@ -11,6 +11,27 @@ function dropDelete(){
     $('#delete').show();
 }
 
+document.getElementById('add-bet')?.addEventListener('click', add);
+document.getElementById('minus-bet')?.addEventListener('click', minus);
+document.getElementById('launch-bth')?.addEventListener('click', launch)
+
+async function launch(e){
+    e.preventDefault();
+    
+    let urlProps = '/Lot/LaunchProject?lotId=' + lotId; 
+    let response = await fetch(window.location.origin + urlProps, {
+        method: 'post',
+        headers: getFormHeader()
+    });
+    
+    if(response.ok){
+        location.reload();
+    }
+    else{
+        alert('fill all fields in the project');
+    }
+}
+
 
 function parseNumber(value, locale = navigator.language) {
     const example = Intl.NumberFormat(locale).format('1.1');
@@ -37,85 +58,91 @@ let rateCount = document.getElementById('rate-count');
 let minRate = parseFloat(rateInput.value);
 const rateStep = 10.0;
 
-function add(){
+function add() {
     rateInput.value = parseFloat(rateInput.value) + rateStep;
 }
 
-function minus(){
+function minus() {
     let newValue = parseFloat(rateInput.value) - rateStep;
-    console.log(newValue)
     if (newValue > minRate) {
         rateInput.value = parseFloat(newValue);
     }
 }
 
 
-
-async function onBackClick(){
-    fundedSpan.innerHTML = rateInput.value;
-    rateCount.innerHTML = parseFloat(rateCount.innerHTML) + 1;
-    
-    let rate = rateInput.value
-    
-    let response = await fetch(window.location.origin + `/rate/SetRate?lotId=${lotId}&rate=${rate}`, {
-        method: 'post',
-        headers: getFormHeader()
-    })
-    
-    console.log(rate)
-}
-
-async function updateLotData(){
-    let response = await fetch(window.location.origin + `/rate/GetLotFunding?lotId=${lotId}`, {
-        method: 'get',
-        headers: getFormHeader()
-    })
-
-    if (response.ok){
-        let data = await response.json();
-        fundedSpan.innerHTML = data.currentPrice;
-        rateCount.innerHTML = data.ratesCount;
-        minRate = data.currentPrice;
-        
-        return setTimeout(updateLotData, 2000);
-    }
-}
-
-updateLotData()
-
-
-async function onLaunchClick(){
-    let response = await fetch(window.location.origin + `/lot/LaunchProject?lotId=${lotId}`,{
-        method: 'post',
-        headers: getFormHeader()
-    });
-    
-    console.log(response);
-    if(response.ok){
-        switch (response.status){
-            case 202: console.log("no"); break;
-            // default: console.log(await response.json());
-        }
-    }
-    
+let backButton = document.getElementById("back-button");
+if (backButton){
+    backButton.disabled = true;
 }
 
 
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl('/commentsHub')
+    .build();
 
-async function fetchCommentsView(url){
+connection.on('UpdateBet', (bet) => {
+    console.log(bet);
+    
+    fundedSpan.innerHTML = bet.amount;
+    rateCount.innerHTML = parseInt(rateCount.innerHTML) + 1;
+    minRate = bet.amount;
+    
+})
 
-    let response = await fetch(window.location.origin + '/Comment/GetPage' + url);
-    if (response.ok){
-        
-        // document.querySelectorAll('[data-href]')
-        //     .forEach(i => i.removeEventListener('click', onPageClick))
+connection.on('Exception', (message) => {
+    console.log(message);
+})
 
-        document.getElementById('comments').innerHTML = await response.text();
-
-        // document.querySelectorAll('[data-href]')
-        //     .forEach(i => i.addEventListener('click', onPageClick))
-        //
-        // document.getElementById('items-count').innerHTML =
-        //     document.getElementById('PagingInfo_TotalPages').value;
+connection.start().then(function () {
+    if (backButton){
+        backButton.disabled = false;
     }
+    
+    connection.invoke("JoinRoom", lotId)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+
+    backButton?.addEventListener('click', onBackClick)
+    
+}).catch(function (err) {
+    return console.error(err.toString());
+});
+
+function onBackClick(){
+    let bet = rateInput.value;
+    let goal = document.getElementById('goal').innerText;
+    if (bet < goal){
+        return 
+    }
+
+    let culture = getCulture();
+    connection.invoke('AddBet', lotId, bet, culture)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
+}
+
+rateInput.addEventListener('input', (i) => {
+    let value = i.target.value;
+    console.log(value);
+    console.log('num', parseNumber(value))
+    console.log(Intl.NumberFormat(local).format())
+    let regexp = /^\d+$/;
+    console.log(regexp.test(value))
+    
+    // console.log('event: ', parseFloat(i.target.value))
+});
+
+
+
+function getCulture(){
+    let language;
+    if (window.navigator.languages) {
+        language = window.navigator.languages[0];
+    } else {
+        language = window.navigator.userLanguage || window.navigator.language;
+    }
+    
+    return language;
 }

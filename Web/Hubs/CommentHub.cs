@@ -1,35 +1,47 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using Data;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
-using Repository;
 using Repository.Interfaces;
-using Web.DTO;
-using Web.DTO.Comment;
 
 namespace Web.Hubs
 {
     public class CommentHub : Hub
     {
-        private readonly IRepository<Comment> _repository;
-        private readonly UserManager<AppUser> _manager;
+        private readonly IRepository<Rate> _repository;
+        private readonly ILotRepository _lotRepository;
 
-        public CommentHub(IRepository<Comment> repository, UserManager<AppUser> manager)
+        public CommentHub(IRepository<Rate> repository, ILotRepository lotRepository)
         {
             _repository = repository;
-            _manager = manager;
+            _lotRepository = lotRepository;
         }
 
-
         [Authorize]
-        public async Task PostComment(CommentMessage commentMessage)
+        public async Task AddBet(string lotId, string bet, string culture)
         {
-            var comment = await SaveComment(commentMessage);
-            comment.AppUser = await _manager.FindByIdAsync(Context.UserIdentifier);
-            
-            await Clients.Group(commentMessage.LotId).SendAsync("ReceiveComment", comment);
+            var isDecimal = decimal.TryParse(bet, NumberStyles.Currency, new CultureInfo(culture), out var betM);
+            var isInt = int.TryParse(lotId, out var id);
+
+            if (isDecimal && isInt)
+            {
+                var rate = await SaveRate(id, betM);
+                if (rate != null)
+                {
+                    await Clients.Group(lotId).SendAsync("UpdateBet", rate);
+                }
+                else
+                {
+                    await Clients.Caller.SendAsync("Exception", "The object has not preserved");
+                }
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("Exception", "Bet or lotId isn't correct");
+            }
         }
 
         public Task JoinRoom(string lotId)
@@ -42,17 +54,27 @@ namespace Web.Hubs
             return Groups.RemoveFromGroupAsync(Context.ConnectionId, lotId);
         }
 
-        private async Task<Comment> SaveComment(CommentMessage commentMessage)
+        private async Task<Rate> SaveRate(int lotId, decimal bet)
         {
-            var comment = new Comment
+            var lot = await _lotRepository.Find(lotId);
+            if (lot != null)
             {
-                AppUserId = Context.UserIdentifier,
-                CreatedAt = DateTime.UtcNow,
-                Text = commentMessage.Message,
-                LotId = int.Parse(commentMessage.LotId)
-            };
+                await _lotRepository.LoadRates(lot);
+                if (lot.Rates.Count == 0 || bet > lot.Rates.Max(i => i.Amount))
+                {
+                    var rate = new Rate
+                    {
+                        Amount = bet,
+                        CreatedAt = DateTime.UtcNow,
+                        LotId = lotId,
+                        AppUserId = Context.UserIdentifier
+                    };
 
-            return await _repository.Add(comment);
+                    return await _repository.Add(rate);
+                }
+            }
+
+            return null;
         }
     }
 }

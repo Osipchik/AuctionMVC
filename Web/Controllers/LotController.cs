@@ -6,6 +6,7 @@ using Data;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
 using Repository.Interfaces;
@@ -13,6 +14,8 @@ using Service;
 using Service.Interfaces;
 using Web.DTO;
 using Web.DTO.Lot;
+using Web.EmailSender;
+using MailMessage = Web.EmailSender.MailMessage;
 
 namespace Web.Controllers
 {
@@ -20,13 +23,15 @@ namespace Web.Controllers
     {
         private readonly ILotRepository _repository;
         private readonly ICloudStorage _cloudStorage;
+        private readonly IEmailService _emailService;
+        private readonly UserManager<AppUser> _userManager;
         
-        public LotController(ILotRepository repository, ICloudStorage cloudStorage)
+        public LotController(ILotRepository repository, ICloudStorage cloudStorage, IEmailService emailService, UserManager<AppUser> userManager)
         {
             _repository = repository;
             _cloudStorage = cloudStorage;
-            
-            
+            _emailService = emailService;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -63,7 +68,7 @@ namespace Web.Controllers
         [Authorize]
         public async Task<IActionResult> Update(int lotId)
         {
-            var lot = await _repository.Find(lotId, HttpContext);
+            var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
             if (lot != null)
             {
                 ViewData["Id"] = lotId;
@@ -80,7 +85,7 @@ namespace Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var lot = await _repository.Find(lotId, HttpContext);
+                var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
                 if (lot != null)
                 {
                     SetLotModel(model, lot);
@@ -125,7 +130,7 @@ namespace Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int lotId)
         {
-            var lot = await _repository.Find(lotId, HttpContext);
+            var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
 
             if (lot != null)
             {
@@ -149,6 +154,7 @@ namespace Web.Controllers
                 {
                     await _repository.LoadRates(lot);
                     ViewData["UserId"] = HttpContext.UserId();
+                    ViewData["Funded"] = lot.Rates?.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount ?? 0m;
                     return View(lot);
                 }
             }
@@ -168,27 +174,62 @@ namespace Web.Controllers
         [Authorize]
         public async Task<IActionResult> LaunchProject(int lotId)
         {
-            var lot = await _repository.Find(lotId, HttpContext);
+            var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
             if (lot != null && IsLotReady(lot))
             {
                 lot.IsAvailable = true;
                 await _repository.Update(lot);
-      
-                // BackgroundJob.Schedule(
-                //     () => BackgroundTask(lotId),
-                //     lot.EndAt - DateTime.UtcNow
-                // );
+            
+                BackgroundJob.Schedule(
+                    () => SendLaunchNotification(lotId),
+                    lot.LunchAt - DateTime.UtcNow
+                );
                 
-                return Ok(new {lotId});
+                BackgroundJob.Schedule(
+                    () => SendFinishedNotification(lotId),
+                    lot.EndAt - DateTime.UtcNow
+                );
+                
+                return Ok();
             }
             
-            return Accepted();
+            return BadRequest();
         }
 
-        private async Task BackgroundTask(int id)
+        private async Task SendLaunchNotification(int id)
         {
             var lot = await _repository.Find(id);
-            await _repository.Delete(lot);
+            if (lot != null)
+            {
+                var user = await _userManager.FindByIdAsync(lot.AppUserId);
+                await _emailService.Send(new MailMessage(user.Email, user.UserName, $"{lot.Title} is successfully started",
+                    EmailTypes.LaunchNotification));
+            }
+        }
+
+        private async Task SendFinishedNotification(int id)
+        {
+            var lot = await _repository.Find(id);
+            if (lot != null)
+            {
+                lot.IsAvailable = false;
+                await _repository.Update(lot);
+                await _repository.LoadRates(lot);
+                var maxRate = lot.Rates[0];
+
+                var betOwner = await _userManager.FindByIdAsync(maxRate?.AppUserId);
+                var user = await _userManager.FindByIdAsync(lot.AppUserId);
+
+                var message = $"{lot.Title} is finished!\n";
+                
+                message += betOwner == null 
+                    ? "Unfortunately, no one users made a bets"
+                    : $"{betOwner.UserName.Split('@')[0]} made the max bet: " +
+                      $"{lot.Rates.OrderByDescending(c => c.CreatedAt).First().Amount}";
+                
+                
+                await _emailService.Send(new MailMessage(user.Email, user.UserName, message, EmailTypes.FinishNotification));
+            }
         }
 
         private bool IsLotReady(Lot lot)

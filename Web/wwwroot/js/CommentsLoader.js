@@ -1,76 +1,38 @@
 ﻿"use strict"
 
 document.getElementById('comments-link')
-    .addEventListener('click', async () => await loadComments());
+    ?.addEventListener('click', async () => await loadComments());
+
+document.getElementById('post-comment-button')
+    ?.addEventListener('click', postComment);
+
 
 let isLoaded = false
-const connection = new signalR.HubConnectionBuilder().withUrl('/commentsHub').build();
-
-connection.start().then(function () {
-    document.getElementById("post-comment-button").disabled = false;
-}).catch(function (err) {
-    return console.error(err.toString());
-});
-
 async function loadComments(){
-    console.log(isLoaded)
-    if (isLoaded){
-        return
-    }
-
-    if (await load()){
-        connect();   
+    if (!isLoaded){
+        await load();
+        
+        let loadInterval = setTimeout(async function loadFunc(){
+            await load();
+            loadInterval = setTimeout(loadFunc, 2000)
+        }, 2000);
     }
 }
 
-function connect(){
-    connection.invoke("JoinRoom", lotId)
-        .catch(function (err) {
-            return console.error(err.toString());
-        })
+async function postComment(e){
+    e.preventDefault();
+    let urlParams = `lotId=${lotId}&message=${document.getElementById("comment-content").value}`;
+    let response = await fetch(window.location.origin + '/Comment/PostComment?' + urlParams, {
+        method: 'post',
+        headers: getFormHeader()
+    })
 
-    console.log('connect');
-    document.getElementById('post-comment-button')
-        .addEventListener('click', postComment);
-}
-
-function postComment(){
-    let data = {
-        message: document.getElementById("comment-content").value,
-        lotId: lotId
+    console.log(response)
+    if(response.ok){
+        document.getElementById("comment-content").value = '';
+        document.getElementById("comments-list").innerHTML = await response.text();
     }
-
-    document.getElementById("comment-content").value = '';
-    console.log(data)
-
-    connection.invoke("PostComment", data).catch(function (err) {
-        return console.error(err.toString());
-    });
 }
-
-connection.on("ReceiveComment", function (message) {
-    skip += 1;
-    
-    let msg = message.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    let li = document.createElement("li");
-    li.classList.add('media', 'my-2');
-
-    let div = document.createElement("div");
-    div.classList.add('media-body');
-
-    let h = document.createElement("h5");
-    h.classList.add('mt-0',  'mb-1');
-    h.textContent = message.appUser.userName;
-    
-    div.textContent = msg;
-    div.prepend(h)
-    
-    li.appendChild(div);
-    
-    document.getElementById("comments-list").prepend(li);
-});
-
 
 window.addEventListener('scroll', loadByMark)
 
@@ -90,14 +52,16 @@ async function load(){
         method: 'get',
         headers: {'Accept': 'application/json', "Content-Type": "application/json"}
     })
-    
+    console.log('load')
     if (response.ok){
         isOnLoad = false;
         skip += take;
         
-        let el = document.createElement('div');
-        el.innerHTML = await response.text();
-        document.getElementById('comments').appendChild(el);
+        let el = document.getElementById('comments-list');
+        el.insertAdjacentHTML('beforeend', await response.text());
+        el.querySelectorAll('[data-delete-comment]').forEach(i => {
+            i.addEventListener('click', onDeleteCommentClick)
+        });
         
         return true;
     }
@@ -110,7 +74,23 @@ async function loadByMark(){
     let mark = document.getElementById('last-comment');
     if (mark !== null && mark.style['display'] !== 'none'){
         mark.remove();
-        console.log(123)
         await load();
+    }
+}
+
+
+async function onDeleteCommentClick(e){
+    e.preventDefault();
+    let commentId = e.target.closest('div').dataset.deleteComment;
+    
+    let url = '/Comment/DeleteComment?commentId=' + commentId;
+    let response = await fetch(window.location.origin + url, {
+        method: 'delete',
+        headers: getFormHeader()
+    });
+
+    if (response.ok){
+        let commentElement = document.getElementById(`comment-${commentId}`);
+        commentElement.remove();
     }
 }

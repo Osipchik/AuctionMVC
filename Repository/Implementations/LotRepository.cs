@@ -51,16 +51,31 @@ namespace Repository.Implementations
             return query;
         }
         
-        public IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show)
+        public IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show, int categoryId)
         {
-            var query = show switch
-            {
-                ShowOptions.Active => Order(sortBy, i => i.IsAvailable && i.EndAt > DateTime.UtcNow),
-                ShowOptions.Sold => Order(sortBy, i => i.IsAvailable && i.EndAt < DateTime.UtcNow),
-                ShowOptions.All => Order(sortBy, i => i.IsAvailable),
-                _ => Order(sortBy)
-            };
+            IQueryable<Lot> query;
             
+            if (categoryId != 0)
+            {
+                query = show switch
+                {
+                    ShowOptions.Active => Order(sortBy, i => i.IsAvailable && i.EndAt > DateTime.UtcNow && i.CategoryId == categoryId),
+                    ShowOptions.Sold => Order(sortBy, i => i.IsAvailable && i.EndAt < DateTime.UtcNow && i.CategoryId == categoryId),
+                    ShowOptions.All => Order(sortBy, i => i.IsAvailable && i.CategoryId == categoryId),
+                    _ => Order(sortBy,  i => i.CategoryId == categoryId)
+                };
+            }
+            else
+            {
+                query = show switch
+                {
+                    ShowOptions.Active => Order(sortBy, i => i.IsAvailable && i.EndAt > DateTime.UtcNow),
+                    ShowOptions.Sold => Order(sortBy, i => i.IsAvailable && i.EndAt < DateTime.UtcNow),
+                    ShowOptions.All => Order(sortBy, i => i.IsAvailable),
+                    _ => Order(sortBy)
+                };   
+            }
+
             return query;
         }
 

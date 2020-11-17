@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Repository;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Repository.Interfaces;
 using Repository.SortOptions;
 using Web.DTO;
@@ -18,52 +16,27 @@ namespace Web.Controllers
     public class HomeController : Controller
     {
         private readonly ILotRepository _repository;
-        private readonly int _pageSize;
+        private readonly ICategoryRepository _categoryRepository;
         
-        public HomeController(ILotRepository repository, IConfiguration configuration)
+        public HomeController(ILotRepository repository, ICategoryRepository categoryRepository)
         {
             _repository = repository;
-            _pageSize  = Convert.ToInt32(configuration.GetSection("PageSize").Value);
+            _categoryRepository = categoryRepository;
         }
         
         [HttpGet]
-        public async Task<IActionResult> Index(string search, SortBy sortBy, ShowOptions show, int page = 1)
+        public async Task<IActionResult> Index(string search, SortBy sortBy, ShowOptions show, int categoryId)
         {
-            var (lots, totalItems) = await GetLots(sortBy, show, search, page);
-            var viewModel = BuildIndexViewModel(lots, page, sortBy, show, search, totalItems);
+            var categories = await _categoryRepository.GetAll();
+            var viewModel = BuildIndexViewModel(categoryId, sortBy, show, search, categories);
             
             return View(viewModel);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPage(string search, SortBy sortBy, ShowOptions show, int page = 1)
+        public async Task<IActionResult> LoadLots(string search, int categoryId, SortBy sortBy, ShowOptions show, int take, int skip)
         {
-            var (lots, totalItems) = await GetLots(sortBy, show, search, page);
-            var viewModel = BuildIndexViewModel(lots, page, sortBy, show, search, totalItems);
-            
-            return PartialView("_LotView", viewModel);
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
-        }
-
-
-
-
-        private async Task<(IEnumerable<LotView> lots, int)> GetLots(SortBy sortBy,
-            ShowOptions show, string search, int page)
-        {
-            var query = _repository.FilterLots(sortBy, show);
-
-            var asd = query.ToList();
+            var query = _repository.FilterLots(sortBy, show, categoryId);
             
             if (show == ShowOptions.MyLots)
             {
@@ -79,26 +52,37 @@ namespace Web.Controllers
                     : query.Where(i => i.Title.Contains(search));
             }
 
-            var lots = await _repository.FindRange(query, _pageSize, (page - 1) * _pageSize);
-
-            return (lots, query.Count());
+            var lots = await _repository.FindRange(query, take, skip);
+            
+            return PartialView("_LotList", lots);
         }
 
-        private IndexViewModel BuildIndexViewModel(IEnumerable<LotView> lots, int page, SortBy sortBy,
-            ShowOptions show, string search, int totalItems)
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
+        }
+
+        public IActionResult NotFoundError(NotfoundErrorViewModel model)
+        {
+            return View("404", model);
+        }
+        
+        private IndexViewModel BuildIndexViewModel(int categoryId, SortBy sortBy,
+            ShowOptions show, string search, IEnumerable<Category> categories)
         {
             var viewModel = new IndexViewModel
             {
-                Lots = lots,
-                PagingInfo = new PagingInfo
-                {
-                    CurrentPage = page,
-                    ItemsPerPage = _pageSize,
-                    TotalItems = totalItems
-                },
                 SortBy = sortBy,
                 ShowOptions = show,
-                Search = search
+                Search = search,
+                CategoryId = categoryId,
+                Categories = new SelectList(categories, "Id", "Name")
             };
 
             return viewModel;

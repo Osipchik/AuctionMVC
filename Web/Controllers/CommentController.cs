@@ -17,7 +17,7 @@ namespace Web.Controllers
         private readonly ICommentRepository _repository;
         private readonly IRepository<Lot> _lotRepository;
 
-        public CommentController(ICommentRepository repository, IMapper mapper, IRepository<Lot> lotRepository)
+        public CommentController(ICommentRepository repository, IRepository<Lot> lotRepository)
         {
             _repository = repository;
             _lotRepository = lotRepository;

@@ -4,6 +4,6 @@ namespace Web.EmailSender
 {
     public interface IEmailService
     {
-        Task Send(MailMessage message);
+        Task Send(MailMessage message, string subject = null);
     }
 }

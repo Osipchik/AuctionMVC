@@ -17,13 +17,13 @@ namespace Web.EmailSender
         }
 
 
-        public async Task Send(MailMessage message)
+        public async Task Send(MailMessage message, string subject = null)
         {
             using (var client = new SmtpClient())
             {
                 var authConfig = _configuration.GetSection("Admin");
 
-                var res = await _emailFabric.BuildEmailValueTask(message, authConfig["Email"]);
+                var res = await _emailFabric.BuildEmailValueTask(message, subject, authConfig["Email"]);
                 
                 await client.ConnectAsync("smtp.gmail.com", 587, false);
                 await client.AuthenticateAsync(authConfig["Email"], authConfig["EmailPassword"]);

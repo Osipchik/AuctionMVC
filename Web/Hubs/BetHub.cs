@@ -9,39 +9,27 @@ using Repository.Interfaces;
 
 namespace Web.Hubs
 {
-    public class CommentHub : Hub
+    public class BetHub : Hub
     {
         private readonly IRepository<Rate> _repository;
         private readonly ILotRepository _lotRepository;
 
-        public CommentHub(IRepository<Rate> repository, ILotRepository lotRepository)
+        public BetHub(IRepository<Rate> repository, ILotRepository lotRepository)
         {
             _repository = repository;
             _lotRepository = lotRepository;
         }
 
         [Authorize]
-        public async Task AddBet(string lotId, string bet, string culture)
+        public async Task AddBet(string lotId, string bet)
         {
-            var isDecimal = decimal.TryParse(bet, NumberStyles.Currency, new CultureInfo(culture), out var betM);
-            var isInt = int.TryParse(lotId, out var id);
+            var betM = decimal.Parse(bet, CultureInfo.InvariantCulture);
+            var id = int.Parse(lotId);
 
-            if (isDecimal && isInt)
-            {
-                var rate = await SaveRate(id, betM);
-                if (rate != null)
-                {
-                    await Clients.Group(lotId).SendAsync("UpdateBet", rate);
-                }
-                else
-                {
-                    await Clients.Caller.SendAsync("Exception", "The object has not preserved");
-                }
-            }
-            else
-            {
-                await Clients.Caller.SendAsync("Exception", "Bet or lotId isn't correct");
-            }
+            var newBet = await SaveBet(id, betM);
+            var task = newBet != null
+                ? Clients.Group(lotId).SendAsync("UpdateBet", newBet)
+                : Clients.Caller.SendAsync("Exception", "The object has not preserved");
         }
 
         public Task JoinRoom(string lotId)
@@ -54,7 +42,7 @@ namespace Web.Hubs
             return Groups.RemoveFromGroupAsync(Context.ConnectionId, lotId);
         }
 
-        private async Task<Rate> SaveRate(int lotId, decimal bet)
+        private async Task<Rate> SaveBet(int lotId, decimal bet)
         {
             var lot = await _lotRepository.Find(lotId);
             if (lot != null)

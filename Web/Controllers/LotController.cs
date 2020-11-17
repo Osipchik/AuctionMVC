@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Repository;
 using Repository.Interfaces;
 using Service;
@@ -25,19 +26,28 @@ namespace Web.Controllers
         private readonly ICloudStorage _cloudStorage;
         private readonly IEmailService _emailService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ICategoryRepository _categoryRepository;
         
-        public LotController(ILotRepository repository, ICloudStorage cloudStorage, IEmailService emailService, UserManager<AppUser> userManager)
+        public LotController(ILotRepository repository,
+            ICloudStorage cloudStorage, 
+            IEmailService emailService, 
+            UserManager<AppUser> userManager, 
+            ICategoryRepository categoryRepository)
         {
             _repository = repository;
             _cloudStorage = cloudStorage;
             _emailService = emailService;
             _userManager = userManager;
+            _categoryRepository = categoryRepository;
         }
 
         [HttpGet]
         [Authorize]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var categories = await _categoryRepository.GetAll();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");;
+            
             return View();
         }
 
@@ -61,6 +71,8 @@ namespace Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
             
+            ModelState.AddModelError(string.Empty, "Fill the blanks");
+            
             return View();
         }
 
@@ -71,6 +83,8 @@ namespace Web.Controllers
             var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
             if (lot != null)
             {
+                var categories = await _categoryRepository.GetAll();
+                ViewBag.Categories = new SelectList(categories, "Id", "Name");
                 ViewData["Id"] = lotId;
                 return View( new CreateLotModel(lot));
             }
@@ -105,6 +119,7 @@ namespace Web.Controllers
             lot.Description = model.Description;
             lot.LunchAt = model.LunchAt.ToUniversalTime();
             lot.EndAt = model.EndAt.ToUniversalTime();
+            lot.CategoryId = model.CategoryId;
             lot.Goal = model.Goal;
             lot.Story = model.Story;
         }
@@ -159,7 +174,16 @@ namespace Web.Controllers
                 }
             }
             
-            return RedirectToAction("Error", "Home");
+            
+            // var errorViewModel = new NotfoundErrorViewModel
+            // {
+            //     Message = $"Lot with Id {lotId} not found"
+            // };
+
+            ViewBag.Message = $"Lot with Id {lotId} not found";
+
+            return View("ErrorPage");
+            // return RedirectToAction("NotFoundError", "Home", errorViewModel);
         }
 
         [HttpPost]
@@ -179,12 +203,7 @@ namespace Web.Controllers
             {
                 lot.IsAvailable = true;
                 await _repository.Update(lot);
-            
-                BackgroundJob.Schedule(
-                    () => SendLaunchNotification(lotId),
-                    lot.LunchAt - DateTime.UtcNow
-                );
-                
+
                 BackgroundJob.Schedule(
                     () => SendFinishedNotification(lotId),
                     lot.EndAt - DateTime.UtcNow

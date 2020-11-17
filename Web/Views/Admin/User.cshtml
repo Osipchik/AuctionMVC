@@ -1,0 +1,71 @@
+﻿@model Web.DTO.Admin.UserInfo
+
+
+@{
+    ViewData["Title"] = "User Tweaks";
+}
+
+<div>
+    <div class="pb-3">
+        <h5 class="d-inline" id="user-name">@Model.User.UserName</h5>
+        @await Html.PartialAsync("_RolesPills", Model.UserRoles)
+        <h6 class="pl-3 d-inline">Email confirmed: @Model.User.EmailConfirmed</h6>
+    </div>
+
+    <div class="row ml-1">
+        <form asp-controller="Admin" asp-action="EditUserRoles" method="post">
+            <input type="hidden" name="userId" value="@Model.User.Id" />
+            <div class="form-group form-row">
+                @foreach (var role in Model.Roles)
+                {
+                    <div class="custom-control custom-checkbox ml-1 mr-2">
+                        @if (role.Name == "superAdmin" && (Model.UserRoles.Contains("superAdmin") || !User.IsInRole("superAdmin")))
+                        {
+                            <input type="checkbox" class="custom-control-input" name="roles" value="@role.Name" id="@role.Id"
+                                   @(Model.UserRoles.Contains(role.Name) ? "checked=\"checked\"" : "") disabled>
+                            <label class="custom-control-label" for="@role.Id">@role.Name</label>
+                        }
+                        else
+                        {
+                            <input type="checkbox" class="custom-control-input cursor-pointer" name="roles" value="@role.Name" id="@role.Id"
+                                   @(Model.UserRoles.Contains(role.Name) ? "checked=\"checked\"" : "")>
+                            <label class="custom-control-label cursor-pointer" for="@role.Id">@role.Name</label>
+                        }
+                    </div>
+                }
+                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+            </div>
+        </form>
+        
+        <form class="px-3">
+            <input type="hidden" name="userId" value="@Model.User.Id" />
+            <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
+        </form>
+        
+        <p>
+            <button class="btn btn-info btn-sm" type="button" data-toggle="collapse" data-target="#collapseExample"
+                    aria-expanded="false" aria-controls="collapseExample">
+                Send email
+            </button>
+        </p>
+        <div class="collapse col-md-7 col-sm-12 mx-auto" id="collapseExample">
+            <div class="card card-body">
+                <form autocomplete="off" method="post" asp-controller="Admin" asp-action="SendMessage">
+                    <input type="hidden" name="to" value="@Model.User.Email" />
+                    <input class="form-control" autocomplete="off" type="text" name="subject" placeholder="Enter subject">
+                    <div class="my-3">
+                        <textarea class="form-control" name="message" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm mx-auto">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="pt-3" id="user-lots-list">
+
+    </div>
+</div>
+
+<script src="~/js/UserPage.js"></script>

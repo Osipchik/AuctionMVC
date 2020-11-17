@@ -6,6 +6,7 @@
         ResetPassword,
         LaunchNotification,
         FinishNotification,
-        WinNotification
+        WinNotification,
+        Message
     }
 }

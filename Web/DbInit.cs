@@ -22,7 +22,7 @@ namespace Web
         
         private static async Task InitialRoles(IConfiguration configuration, RoleManager<IdentityRole> roleManager)
         {
-            var roles = GetRoles(configuration);
+            var roles = configuration.GetRoles();
             foreach (var i in roles)
             {
                 if (await roleManager.FindByNameAsync(i) == null)
@@ -34,7 +34,7 @@ namespace Web
 
         private static async Task UserEnsureCreated(IConfiguration configuration, UserManager<AppUser> userManager)
         {
-            var roles = GetRoles(configuration);
+            var roles = configuration.GetRoles();
             var adminConfig = configuration.GetSection("Admin");
             
             if (!userManager.Users.Any())
@@ -58,9 +58,9 @@ namespace Web
             }
         }
 
-        private static List<string> GetRoles(IConfiguration configuration)
-        {
-            return configuration.GetSection("Roles").GetChildren().ToArray().Select(c => c.Value).ToList();
-        }
+        // private static List<string> GetRoles(IConfiguration configuration)
+        // {
+        //     return configuration.GetSection("Roles").GetChildren().ToArray().Select(c => c.Value).ToList();
+        // }
     }
 }

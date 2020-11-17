@@ -2,13 +2,13 @@
 
 
 function onDelete(){
-    $('#confirmDelete').show();
-    $('#delete').hide();
+    document.getElementById('confirmDelete').style.display = '';
+    document.getElementById('delete').style.display = 'none';
 }
 
 function dropDelete(){
-    $('#confirmDelete').hide();
-    $('#delete').show();
+    document.getElementById('confirmDelete').style.display = 'none';
+    document.getElementById('delete').style.display = '';
 }
 
 document.getElementById('add-bet')?.addEventListener('click', add);
@@ -32,30 +32,26 @@ async function launch(e){
     }
 }
 
-
-function parseNumber(value, locale = navigator.language) {
-    const example = Intl.NumberFormat(locale).format('1.1');
-    const cleanPattern = new RegExp(`[^-+0-9${ example.charAt( 1 ) }]`, 'g');
-    const cleaned = value.replace(cleanPattern, '');
-    const normalized = cleaned.replace(example.charAt(1), '.');
-
-    return parseFloat(normalized);
-}
-
+let goal = document.getElementById('min-price').innerText;
+goal = goal.replace(',', '.');
+document.getElementById('min-price').innerText = goal;
 
 let rateInput = document.getElementById('rate-input');
-let lotId = document.getElementById('Id').value;
 let fundedSpan = document.getElementById('funded-span');
+fundedSpan.innerText = fundedSpan.innerText.replace(',', '.');
+rateInput.value = fundedSpan.innerText
+
+let lotId = document.getElementById('Id').value;
 let rateCount = document.getElementById('rate-count');
 
-// $("#rate-input").on("keypress keyup blur",function (event) {
-//     $(this).val($(this).val().replace(/[^0-9\.]/g,''));
-//            if ((event.which != 46 || $(this).val().indexOf('.') != -1) && (event.which < 48 || event.which > 57)) {
-//                event.preventDefault();
-//            }
-//        });
+function getMinRate() {
+    let rate = parseFloat(rateInput.value);
+    let price = parseFloat(fundedSpan.innerText);
+    
+    return rate > price? rate : price;
+}
 
-let minRate = parseFloat(rateInput.value);
+let minRate = getMinRate();
 const rateStep = 10.0;
 
 function add() {
@@ -69,6 +65,18 @@ function minus() {
     }
 }
 
+rateInput.addEventListener('input', (e) => {
+    rateInput.value = rateInput.value.replace(/[^0-9.-]/g, '')
+
+    let regexp = /^\$?[0-9]*[0-9]\.?[0-9]{0,2}$/i;
+    if(!regexp.test(rateInput.value)){
+        let temp = rateInput.value.split('.');
+        temp[1] = temp[1].substr(0, 2);
+        rateInput.value = temp.join('.');
+    }
+});
+
+
 
 let backButton = document.getElementById("back-button");
 if (backButton){
@@ -76,17 +84,16 @@ if (backButton){
 }
 
 
+
+
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl('/commentsHub')
+    .withUrl('/betHub')
     .build();
 
 connection.on('UpdateBet', (bet) => {
-    console.log(bet);
-    
     fundedSpan.innerHTML = bet.amount;
-    rateCount.innerHTML = parseInt(rateCount.innerHTML) + 1;
+    rateCount.innerHTML = +rateCount.innerHTML + 1;
     minRate = bet.amount;
-    
 })
 
 connection.on('Exception', (message) => {
@@ -111,38 +118,15 @@ connection.start().then(function () {
 
 function onBackClick(){
     let bet = rateInput.value;
-    let goal = document.getElementById('goal').innerText;
-    if (bet < goal){
-        return 
+    if (bet > minRate){
+        connection.invoke('AddBet', lotId, bet)
+            .catch(function (err) {
+                return console.error(err.toString());
+            });
     }
-
-    let culture = getCulture();
-    connection.invoke('AddBet', lotId, bet, culture)
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
 }
 
-rateInput.addEventListener('input', (i) => {
-    let value = i.target.value;
-    console.log(value);
-    console.log('num', parseNumber(value))
-    console.log(Intl.NumberFormat(local).format())
-    let regexp = /^\d+$/;
-    console.log(regexp.test(value))
-    
-    // console.log('event: ', parseFloat(i.target.value))
-});
 
-
-
-function getCulture(){
-    let language;
-    if (window.navigator.languages) {
-        language = window.navigator.languages[0];
-    } else {
-        language = window.navigator.userLanguage || window.navigator.language;
-    }
-    
-    return language;
+window.onbeforeunload = () => {
+    connection.invoke('LeaveRoom', lotId);
 }

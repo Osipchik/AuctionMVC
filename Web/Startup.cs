@@ -1,5 +1,4 @@
 using System;
-using AutoMapper;
 using Data;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
@@ -59,7 +58,7 @@ namespace Web
             services.ConfigureApplicationCookie(options =>
             {
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.ExpireTimeSpan = TimeSpan.FromDays(1);
 
                 options.LoginPath = "/Account/Login";
                 options.AccessDeniedPath = "/Home/";
@@ -98,13 +97,12 @@ namespace Web
             });
 
             services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
-
-            services.AddAutoMapper(typeof(Startup));
-
+            
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICommentRepository, CommentRepository>();
             services.AddTransient<ILotRepository, LotRepository>();
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
             
             services.AddTransient<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
@@ -124,6 +122,8 @@ namespace Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+
+            app.UseStatusCodePagesWithRedirects("/Error/{0}");
 
             app.UseHttpsRedirection();
 
@@ -150,7 +150,7 @@ namespace Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
-                endpoints.MapHub<CommentHub>("/commentsHub");
+                endpoints.MapHub<BetHub>("/betHub");
             });
         }
     }

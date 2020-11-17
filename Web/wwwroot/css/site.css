@@ -137,6 +137,9 @@ label {
   right: 2rem;
 }
 
+
+
+
 .card {
   cursor: pointer;
   transition: all 200ms ease-in-out;
@@ -164,6 +167,15 @@ label {
   margin-left: 0;
   margin-right: 0;
 }
+
+.cursor-none {
+  cursor: inherit;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 
 .filter {
   flex-wrap: nowrap;

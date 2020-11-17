@@ -37,15 +37,12 @@
     </div>
     <div class="col-lg-5">
         <div >
-            <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
             <div class="page-info">
                 <p class="text-info type-28">
                     current price US$
                     <span id="funded-span">@ViewData["Funded"]</span>
                 </p>
-                <p class="text-muted">Starting price US$ <span id="goal">@Model.Goal</span> goal</p>
+                <p class="text-muted">Starting price US$ <span id="min-price">@Model.Goal</span> goal</p>
             </div>
         </div>
         <div class="page-info">
@@ -73,7 +70,7 @@
             <div class="text-center my-3">
                 @Html.AntiForgeryToken()
                 <div class="input-group mb-2">
-                    <input type="text" class="form-control" id="rate-input" value="@ViewData["Funded"]">
+                    <input type="number" min="0" class="form-control" id="rate-input" value="@ViewData["Funded"]" >
                     <div class="input-group-append bid-group">
                         <button class="btn btn-light border" id="add-bet">+</button>
                         <button class="btn btn-light border" id="minus-bet">-</button>

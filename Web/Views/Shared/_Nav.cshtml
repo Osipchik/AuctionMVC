@@ -21,6 +21,9 @@
                     @if (User.IsInRole("admin"))
                     {
                         <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="EditCategories">Edit categories</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Admin" asp-action="Panel">Admin panel</a>
                         </li>
                     }

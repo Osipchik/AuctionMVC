@@ -1,0 +1,21 @@
+﻿@model IEnumerable<Web.DTO.Admin.UserViewModel>
+
+
+@foreach (var i in Model)
+{
+    <div class="card mb-2 cursor-none">
+        <div class="card-body">
+            <div class="row">
+                <h6 class="card-title pr-2 mb-0">Roles:</h6>
+                @await Html.PartialAsync("_RolesPills", i.RoleNames)
+            </div>
+            <p class="card-text">@i.UserName</p>
+            <a asp-controller="Admin" asp-action="User" asp-route-id="@i.Id"
+               class="btn btn-primary btn-sm text-white" role="button">
+                Edit
+            </a>
+        </div>
+    </div>
+}
+
+<div id="load-mark"></div>

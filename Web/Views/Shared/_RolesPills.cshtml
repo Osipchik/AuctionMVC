@@ -1,0 +1,19 @@
+﻿@model IEnumerable<string>
+
+<h6 class="mb-0 d-inline">
+    @foreach (var j in Model)
+    {
+        @switch (j)
+        {
+            case "superAdmin":
+                <span class="mr-1 badge badge-pill badge-success">@j</span>
+                break;
+            case "admin":
+                <span class="mr-1 badge badge-pill badge-primary">@j</span>
+                break;
+            default:
+                <span class="mr-1 badge badge-pill badge-secondary">@j</span>
+                break;
+        }
+    }
+</h6>

@@ -1,38 +1,53 @@
 ﻿"use strict"
 
-async function onChange(){
-    let show = document.getElementById('show-filter').value;
-    let sort = document.getElementById('sort-filter').value;
-    let search = document.getElementById('search-input').value;
-    
-    let url = `/?search=${search}&Show=${show}&SortBy=${sort}&page=1`;
-
-    await fetchView(url)
+let loadParams = {
+    show: '',
+    sort: '',
+    search: '',
+    categoryId: ''
 }
 
-async function onPageClick(){
-    await fetchView(this.dataset.href)
-}
+let take = 30;
+let skip = 0;
 
-
-async function fetchView(url){
-    
-    let response = await fetch(window.location.origin + '/home/GetPage' + url);
-    if (response.ok){
-        changeUrl(url)
-        document.querySelectorAll('[data-href]')
-            .forEach(i => i.removeEventListener('click', onPageClick))
-
-        document.getElementById('lot-view-container').innerHTML = await response.text();
-
-        document.querySelectorAll('[data-href]')
-            .forEach(i => i.addEventListener('click', onPageClick))
+const insertInto = 'lot-view-container';
+function getUrl(){
+    let url = '/Home/LoadLots/?' +
+        `search=${loadParams.search}&` +
+        `Category=${loadParams.categoryId}&` +
+        `Show=${loadParams.show}&` +
+        `SortBy=${loadParams.sort}&` +
+        `take=${take}&skip=${skip}`;
         
-        document.getElementById('items-count').innerHTML =
-            document.getElementById('PagingInfo_TotalPages').value;
+    return url;
+}
+
+document.querySelectorAll('[data-filter]')
+    .forEach(i => i.addEventListener('click', onChange));
+
+function onChange(e){
+    e.preventDefault();
+    console.log(123);
+    
+    loadParams.show = document.getElementById('show-filter').value;
+    loadParams.sort = document.getElementById('sort-filter').value;
+    loadParams.search = document.getElementById('search-input').value;
+    loadParams.categoryId = document.getElementById('category-filter').value;
+
+    take = 10;
+    skip = 0;
+
+    document.getElementById(insertInto).innerHTML = '';
+    
+    load(getUrl(), insertInto);
+}
+
+async function loadNumber(){
+    if (await load(getUrl(), insertInto)){
+        skip += take;
     }
 }
 
-document.querySelectorAll('[data-href]')
-    .forEach(i => i.addEventListener('click', onPageClick))
-
+window.addEventListener('scroll', async () => await loadByMark(loadNumber));
+// document.addEventListener("DOMContentLoaded", loadNumber);
+loadNumber();

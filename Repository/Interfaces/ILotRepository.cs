@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Data;
 using Repository.SortOptions;
@@ -12,7 +10,7 @@ namespace Repository.Interfaces
     {
         Task<Lot> Find(int lotId, string userId, bool isAdmin);
         Task<IEnumerable<LotView>> FindRange(IQueryable<Lot> queryable, int take, int skip);
-        IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show);
+        IQueryable<Lot> FilterLots(SortBy sortBy, ShowOptions show, int categoryId);
         Task LoadRates(Lot lot);
     }
 }

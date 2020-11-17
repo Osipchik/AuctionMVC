@@ -1,23 +1,20 @@
 ﻿"use strict"
 
-document.getElementById('comments-link')
-    ?.addEventListener('click', async () => await loadComments());
-
-document.getElementById('post-comment-button')
-    ?.addEventListener('click', postComment);
+document.getElementById('comments-link')?.addEventListener('click', loadNumber);
+document.getElementById('post-comment-button')?.addEventListener('click', postComment);
 
 
-let isLoaded = false
-async function loadComments(){
-    if (!isLoaded){
-        await load();
-        
-        let loadInterval = setTimeout(async function loadFunc(){
-            await load();
-            loadInterval = setTimeout(loadFunc, 2000)
-        }, 2000);
-    }
-}
+// let isOnLoading = false
+// async function loadComments(){
+//     if (!isOnLoading){
+//         await load(getUrl(), insertInto);
+//        
+//         let loadInterval = setTimeout(async function loadFunc(){
+//             await load(getUrl(), insertInto);
+//             loadInterval = setTimeout(loadFunc, 2000)
+//         }, 2000);
+//     }
+// }
 
 async function postComment(e){
     e.preventDefault();
@@ -34,49 +31,68 @@ async function postComment(e){
     }
 }
 
-window.addEventListener('scroll', loadByMark)
+
 
 let take = 10;
 let skip = 0;
-let isOnLoad = false;
 
-async function load(){
-    if (isOnLoad){
-        return
-    }
-    
-    isOnLoad = true;
-    
-    let urlRequest = `/Comment/GetComments?lotId=${lotId}&take=${take}&skip=${skip}`;
-    let response = await fetch(window.location.origin + urlRequest, {
-        method: 'get',
-        headers: {'Accept': 'application/json', "Content-Type": "application/json"}
-    })
-    console.log('load')
-    if (response.ok){
-        isOnLoad = false;
+const insertInto = 'comments-list';
+function getUrl(){
+    return `/Comment/GetComments?lotId=${lotId}&take=${take}&skip=${skip}`;
+}
+
+async function loadNumber(){
+    if (await load(getUrl(), insertInto)){
         skip += take;
-        
-        let el = document.getElementById('comments-list');
-        el.insertAdjacentHTML('beforeend', await response.text());
-        el.querySelectorAll('[data-delete-comment]').forEach(i => {
-            i.addEventListener('click', onDeleteCommentClick)
-        });
-        
-        return true;
-    }
-    
-    return false;
-}
-
-
-async function loadByMark(){
-    let mark = document.getElementById('last-comment');
-    if (mark !== null && mark.style['display'] !== 'none'){
-        mark.remove();
-        await load();
+        console.log('comments load')
     }
 }
+
+window.addEventListener('scroll', async () => await loadByMark(loadNumber));
+
+// window.addEventListener('scroll', loadByMark)
+//
+// let take = 10;
+// let skip = 0;
+// let isOnLoad = false;
+//
+// async function load(){
+//     if (isOnLoad){
+//         return
+//     }
+//
+//     isOnLoad = true;
+//
+//     let urlRequest = `/Comment/GetComments?lotId=${lotId}&take=${take}&skip=${skip}`;
+//     let response = await fetch(window.location.origin + urlRequest, {
+//         method: 'get',
+//         headers: {'Accept': 'application/json', "Content-Type": "application/json"}
+//     })
+//     console.log('load')
+//     if (response.ok){
+//         isOnLoad = false;
+//         skip += take;
+//
+//         let el = document.getElementById('comments-list');
+//         el.insertAdjacentHTML('beforeend', await response.text());
+//         el.querySelectorAll('[data-delete-comment]').forEach(i => {
+//             i.addEventListener('click', onDeleteCommentClick)
+//         });
+//
+//         return true;
+//     }
+//
+//     return false;
+// }
+//
+//
+// async function loadByMark(){
+//     let mark = document.getElementById('last-comment');
+//     if (mark !== null && mark.style['display'] !== 'none'){
+//         mark.remove();
+//         await load();
+//     }
+// }
 
 
 async function onDeleteCommentClick(e){

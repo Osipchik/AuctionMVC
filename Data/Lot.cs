@@ -31,6 +31,7 @@ namespace Data
         [RegularExpression("^[0-9]+")]
         public decimal Goal { get; set; }
         
+        public int CategoryId { get; set; }
         public Category Category { get; set; }
         
         public List<Rate> Rates { get; set; }

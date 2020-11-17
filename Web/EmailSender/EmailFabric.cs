@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using Service.Interfaces;
@@ -16,14 +17,15 @@ namespace Web.EmailSender
             _configuration = configuration;
         }
         
-        public ValueTask<MimeMessage> BuildEmailValueTask(MailMessage message, string fromEmail)
+        public ValueTask<MimeMessage> BuildEmailValueTask(MailMessage message, string subject, string fromEmail)
         {
             return message.EmailType switch
             {
                 EmailTypes.ConfirmEmail => BuildConfirmEmail(message, fromEmail),
                 EmailTypes.LaunchNotification => BuildLaunchNotification(message, fromEmail),
-                EmailTypes.FinishNotification => BuildFinishNotification(message, fromEmail)
+                EmailTypes.FinishNotification => BuildFinishNotification(message, fromEmail),
                 // EmailTypes.ResetPassword => BuildPasswordResetEmail(message)
+                _ => BuildMessage(message, subject, fromEmail)
             };
         }
 
@@ -47,6 +49,13 @@ namespace Web.EmailSender
         {
             var subject = _configuration.GetSection("EmailSubjects")["Email"];
             var body = await _renderer.RenderViewToStringAsync("/Views/Emails/ConfirmAccountEmail.cshtml", message);
+
+            return BuildEmail(message.Name, message.To, subject, body, fromEmail);
+        }
+        
+        private async ValueTask<MimeMessage> BuildMessage(MailMessage message, string subject, string fromEmail)
+        {
+            var body = await _renderer.RenderViewToStringAsync("/Views/Emails/MessageEmail.cshtml", message);
 
             return BuildEmail(message.Name, message.To, subject, body, fromEmail);
         }

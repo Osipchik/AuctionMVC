@@ -1,0 +1,35 @@
+﻿@model Web.DTO.Admin.EditModels
+
+@{
+    ViewData["Title"] = "Admin | Edit categories";
+}
+
+<div class="col-lg-7 col-md-11 col-sm-12 mx-auto">
+    <form class="form-inline" method="post" asp-controller="Admin" asp-action="EditCategories">
+        <div class="form-group mx-sm-3 mb-2 d-flex flex-grow-1">
+            <label asp-for="CategoryName" class="sr-only">Category name</label>
+            <input asp-for="CategoryName" class="form-control d-flex flex-grow-1" placeholder="Category name" required="">
+            <span asp-validation-for="CategoryName" class="form-text text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Add Category</button>
+    </form>
+    
+    <ul class="list-unstyled px-3">
+        @foreach (var i in ViewBag.Categories)
+        {
+            <li class="media my-3">
+                <div class="media-body comment-card" id="comment-@i.Id">
+                    <div class="row px-3 align-middle">
+                        <p>@i.Name</p>
+                        <form method="post" asp-controller="Admin" asp-action="DeleteCategory">
+                            <input type="hidden" name="categoryId" value="@i.Id">
+                            <button type="submit" class="btn btn-danger ml-auto">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+        }
+    </ul>
+</div>

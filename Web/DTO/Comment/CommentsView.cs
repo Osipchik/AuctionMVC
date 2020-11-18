@@ -7,6 +7,6 @@ namespace Web.DTO.Comment
         public int Take { get; set; }
         public int Skip { get; set; }
         public int LotId { get; set; }
-        public List<Data.Comment> Comments { get; set; }
+        public List<Domain.Core.Comment> Comments { get; set; }
     }
 }

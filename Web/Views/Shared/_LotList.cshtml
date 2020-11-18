@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Repository.LotView>
+﻿@model IEnumerable<Domain.Core.Lot>
 
 @foreach (var i in Model)
 {
@@ -27,8 +27,11 @@
                                 <p class="card-text"><small class="text-muted">End at: @i.EndAt</small></p>
                             </div>
                             <div>
-                                <p class="card-text"><small class="text-muted">Min bet: @i.Goal</small></p>
-                                <p class="card-text"><small class="text-muted">Funded: @i.Funded</small></p>
+                                <p class="card-text"><small class="text-muted">Min bet: @i.MinPrice</small></p>
+                                @{
+                                    var rate = i.Rates?.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount ?? 0m;
+                                }
+                                <p class="card-text"><small class="text-muted">Funded: @rate</small></p>
                             </div>
                         </div>
                     </div>

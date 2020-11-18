@@ -1,7 +1,7 @@
 ﻿@using Web.DTO.Partial
 @using Westwind.AspNetCore.Markdown
-@using Repository
-@model Lot
+@using Web
+@model Domain.Core.Lot
 
 
 @{
@@ -42,7 +42,7 @@
                     current price US$
                     <span id="funded-span">@ViewData["Funded"]</span>
                 </p>
-                <p class="text-muted">Starting price US$ <span id="min-price">@Model.Goal</span> goal</p>
+                <p class="text-muted">Starting price US$ <span id="min-price">@Model.MinPrice</span> goal</p>
             </div>
         </div>
         <div class="page-info">

@@ -2,19 +2,20 @@
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Data;
+using Domain.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using Repository.Interfaces;
+using Domain.Interfaces;
+using Infrastructure.Data.SortOptions;
 
 namespace Web.Hubs
 {
     public class BetHub : Hub
     {
         private readonly IRepository<Rate> _repository;
-        private readonly ILotRepository _lotRepository;
+        private readonly ILotRepository<SortBy, ShowOptions> _lotRepository;
 
-        public BetHub(IRepository<Rate> repository, ILotRepository lotRepository)
+        public BetHub(IRepository<Rate> repository, ILotRepository<SortBy, ShowOptions> lotRepository)
         {
             _repository = repository;
             _lotRepository = lotRepository;
@@ -23,13 +24,16 @@ namespace Web.Hubs
         [Authorize]
         public async Task AddBet(string lotId, string bet)
         {
-            var betM = decimal.Parse(bet, CultureInfo.InvariantCulture);
-            var id = int.Parse(lotId);
+            // var betM = decimal.Parse(bet, CultureInfo.InvariantCulture);
+            if (decimal.TryParse(bet, NumberStyles.Number, CultureInfo.InvariantCulture, out var betM))
+            {
+                var id = int.Parse(lotId);
 
-            var newBet = await SaveBet(id, betM);
-            var task = newBet != null
-                ? Clients.Group(lotId).SendAsync("UpdateBet", newBet)
-                : Clients.Caller.SendAsync("Exception", "The object has not preserved");
+                var newBet = await SaveBet(id, betM);
+                var task = newBet != null
+                    ? Clients.Group(lotId).SendAsync("UpdateBet", newBet)
+                    : Clients.Caller.SendAsync("Exception", "The object has not preserved");
+            }
         }
 
         public Task JoinRoom(string lotId)
@@ -48,7 +52,7 @@ namespace Web.Hubs
             if (lot != null)
             {
                 await _lotRepository.LoadRates(lot);
-                if (lot.Rates.Count == 0 || bet > lot.Rates.Max(i => i.Amount))
+                if ((lot.Rates.Count == 0 || bet > lot.Rates.Max(i => i.Amount)) && bet >= lot.MinPrice)
                 {
                     var rate = new Rate
                     {

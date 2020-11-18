@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Data;
+using Domain.Core;
 
 namespace Web.DTO.Admin
 {

@@ -1,5 +1,5 @@
 using System;
-using Data;
+using Domain.Core;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,11 +9,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Serialization;
-using Repository;
-using Repository.Implementations;
-using Repository.Interfaces;
-using Service.Implementations;
-using Service.Interfaces;
+using Domain.Interfaces;
+using Infrastructure.Data;
+using Infrastructure.Data.SortOptions;
+using Serilog;
 using Web.EmailSender;
 using Web.Hubs;
 using Westwind.AspNetCore.Markdown;
@@ -34,7 +33,8 @@ namespace Web
         {
             var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
-            
+            services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
+            services.AddHangfireServer();
             // services.AddDbContext<AppDbContext>(options =>
             // {
             //     options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("Web"));
@@ -96,17 +96,15 @@ namespace Web
                 });
             });
 
-            services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
-            
 
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddTransient<ICommentRepository, CommentRepository>();
-            services.AddTransient<ILotRepository, LotRepository>();
+            services.AddTransient<ILotRepository<SortBy, ShowOptions>, LotRepository>();
             services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddSingleton<ICloudStorage, GoogleCloudStorage>();
             
             services.AddTransient<IRazorViewToStringRenderer, RazorViewToStringRenderer>();
-            services.AddTransient<IEmailService, EmailSender.EmailSender>();
+            services.AddTransient<IEmailSender<MailMessage>, EmailSender.EmailSender>();
             
         }
 
@@ -134,13 +132,11 @@ namespace Web
 
             app.UseCors();
             
-            // app.UseSerilogRequestLogging();
+            app.UseSerilogRequestLogging();
             
             app.UseAuthentication();
             app.UseAuthorization();
-
-
-            app.UseHangfireServer();
+            
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
                 Authorization = new []{new HangfireAuthFilter()}

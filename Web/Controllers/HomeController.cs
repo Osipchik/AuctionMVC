@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Data;
+using Domain.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Repository.Interfaces;
-using Repository.SortOptions;
+using Domain.Interfaces;
+using Infrastructure.Data.SortOptions;
 using Web.DTO;
 using Web.DTO.Pagination;
 
@@ -15,10 +14,10 @@ namespace Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILotRepository _repository;
+        private readonly ILotRepository<SortBy, ShowOptions> _repository;
         private readonly ICategoryRepository _categoryRepository;
         
-        public HomeController(ILotRepository repository, ICategoryRepository categoryRepository)
+        public HomeController(ILotRepository<SortBy, ShowOptions> repository, ICategoryRepository categoryRepository)
         {
             _repository = repository;
             _categoryRepository = categoryRepository;
@@ -37,7 +36,6 @@ namespace Web.Controllers
         public async Task<IActionResult> LoadLots(string search, int categoryId, SortBy sortBy, ShowOptions show, int take, int skip)
         {
             var query = _repository.FilterLots(sortBy, show, categoryId);
-            
             if (show == ShowOptions.MyLots)
             {
                 query = HttpContext.User.Identity.IsAuthenticated
@@ -56,18 +54,8 @@ namespace Web.Controllers
             
             return PartialView("_LotList", lots);
         }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel {RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier});
-        }
-
+        
+        
         public IActionResult NotFoundError(NotfoundErrorViewModel model)
         {
             return View("404", model);

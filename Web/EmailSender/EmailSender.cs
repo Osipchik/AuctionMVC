@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
+using Domain.Interfaces;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Configuration;
-using Service.Interfaces;
 
 namespace Web.EmailSender
 {
-    public class EmailSender : IEmailService
+    public class EmailSender : IEmailSender<MailMessage>
     {
         private readonly IConfiguration _configuration;
         private readonly EmailFabric _emailFabric;

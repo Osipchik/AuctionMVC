@@ -97,9 +97,10 @@
         <div class="col-md-7 col-sm-12">
             <div class="form-group">
                 <div class="mt-3">
-                    <label asp-for="Goal">Goal</label>
-                    <input asp-for="Goal" class="form-control">
-                    <span asp-validation-for="Goal" class="form-text text-danger"></span>
+                    <label asp-for="MinPrice">Min price</label>
+                    <span class="hidden text-white" id="min-price-hidden">@Model?.MinPrice</span>
+                    <input asp-for="MinPrice" type="number" class="form-control" id="min-price-input">
+                    <span asp-validation-for="MinPrice" class="form-text text-danger"></span>
                 </div>
             </div>
         </div>
@@ -116,15 +117,9 @@
         }
         <div class="col-md-7 col-sm-12">
             <div class="form-group">
-                <label asp-for="LunchAt">Lunch At</label>
-                <input asp-for="LunchAt" class="form-control" min="@DateTime.Now" max="@DateTime.Now.AddDays(14)">
-                <span asp-validation-for="LunchAt" class="form-text text-danger"></span>
-                
-                <div class="mt-3">
-                    <label asp-for="EndAt">End At</label>
-                    <input asp-for="EndAt" class="form-control" min="@Model?.LunchAt" max="@Model?.LunchAt.AddDays(30)">
-                    <span asp-validation-for="EndAt" class="form-text text-danger"></span>
-                </div>
+                <label asp-for="EndAt">End At</label>
+                <input asp-for="EndAt" class="form-control" min="0" max="30">
+                <span asp-validation-for="EndAt" class="form-text text-danger"></span>
             </div>
         </div>
     </div>
@@ -149,7 +144,6 @@
         <div class="tab-pane fade show active" id="markdown-edit" role="tabpanel" aria-labelledby="home-tab">
             <div class="form-group">
                 <textarea asp-for="Story" class="form-control" id="markdown-editor"></textarea>
-                @* <textarea class="form-control" id="markdown-editor" ></textarea> *@
             </div>
         </div>
         <div class="tab-pane fade" id="markdown-preview" role="tabpanel" aria-labelledby="profile-tab">
@@ -166,3 +160,4 @@
 </div>
 
 <script src="~/js/markdownLoader.js"></script>
+<script src="~/js/LotUpdatePage.js"></script>

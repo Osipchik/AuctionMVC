@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using Data;
 
 namespace Web.DTO.Lot
 {
@@ -18,15 +17,12 @@ namespace Web.DTO.Lot
         public string ImageUrl { get; set; }
         
         [DataType(DataType.DateTime)]
-        public DateTime LunchAt { get; set; }
-        [DataType(DataType.DateTime)]
         [DisplayName("EndAt")]  
         public DateTime EndAt { get; set; }
         
-        [RegularExpression("^[0-9]+", ErrorMessage = "It must be number")]
         [Range(0, 1_000_000)]
-        [DisplayName("Goal")]  
-        public decimal Goal { get; set; }
+        [DisplayName("Min price")]  
+        public decimal MinPrice { get; set; }
         
         [DataType(DataType.MultilineText)]
         public string Story { get; set; }
@@ -35,15 +31,14 @@ namespace Web.DTO.Lot
         
         public LotModel() {}
         
-        public LotModel(Data.Lot lot)
+        public LotModel(Domain.Core.Lot lot)
         {
             Title = lot.Title;
             Description = lot.Description;
             ImageUrl = lot.ImageUrl;
-            LunchAt = lot.LunchAt;
             EndAt = lot.EndAt;
             CategoryId = lot.CategoryId;
-            Goal = lot.Goal;
+            MinPrice = lot.MinPrice;
             Story = lot.Story;
         }
     }

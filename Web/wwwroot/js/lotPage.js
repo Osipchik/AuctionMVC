@@ -15,22 +15,9 @@ document.getElementById('add-bet')?.addEventListener('click', add);
 document.getElementById('minus-bet')?.addEventListener('click', minus);
 document.getElementById('launch-bth')?.addEventListener('click', launch)
 
-async function launch(e){
-    e.preventDefault();
-    
-    let urlProps = '/Lot/LaunchProject?lotId=' + lotId; 
-    let response = await fetch(window.location.origin + urlProps, {
-        method: 'post',
-        headers: getFormHeader()
-    });
-    
-    if(response.ok){
-        location.reload();
-    }
-    else{
-        alert('fill all fields in the project');
-    }
-}
+
+let lotId = document.getElementById('Id').value;
+let rateCount = document.getElementById('rate-count');
 
 let goal = document.getElementById('min-price').innerText;
 goal = goal.replace(',', '.');
@@ -39,13 +26,45 @@ document.getElementById('min-price').innerText = goal;
 let rateInput = document.getElementById('rate-input');
 let fundedSpan = document.getElementById('funded-span');
 fundedSpan.innerText = fundedSpan.innerText.replace(',', '.');
-rateInput.value = fundedSpan.innerText
+if (rateInput){
+    rateInput.value = fundedSpan.innerText;
 
-let lotId = document.getElementById('Id').value;
-let rateCount = document.getElementById('rate-count');
+    rateInput.addEventListener('input', (e) => {
+        rateInput.value = rateInput.value.replace(/[^0-9.-]/g, '')
+
+        let regexp = /^\$?[0-9]*[0-9]\.?[0-9]{0,2}$/i;
+        if(!regexp.test(rateInput.value)){
+            let temp = rateInput.value.split('.');
+            temp[1] = temp[1].substr(0, 2);
+            rateInput.value = temp.join('.');
+        }
+    });
+}
+
+
+
+async function launch(e){
+    e.preventDefault();
+
+    let urlProps = '/Lot/LaunchProject?lotId=' + lotId;
+    let response = await fetch(window.location.origin + urlProps, {
+        method: 'post',
+        headers: getFormHeader()
+    });
+
+    console.log(response)
+
+    if(response.status === 200){
+        location.reload();
+    }
+    else{
+        alert('fill all fields in the project');
+    }
+}
+
 
 function getMinRate() {
-    let rate = parseFloat(rateInput.value);
+    let rate = parseFloat(rateInput?.value);
     let price = parseFloat(fundedSpan.innerText);
     
     return rate > price? rate : price;
@@ -64,17 +83,6 @@ function minus() {
         rateInput.value = parseFloat(newValue);
     }
 }
-
-rateInput.addEventListener('input', (e) => {
-    rateInput.value = rateInput.value.replace(/[^0-9.-]/g, '')
-
-    let regexp = /^\$?[0-9]*[0-9]\.?[0-9]{0,2}$/i;
-    if(!regexp.test(rateInput.value)){
-        let temp = rateInput.value.split('.');
-        temp[1] = temp[1].substr(0, 2);
-        rateInput.value = temp.join('.');
-    }
-});
 
 
 

@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using Data;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Repository;
-using Repository.SortOptions;
-using Web.DTO.Lot;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Infrastructure.Data.SortOptions;
 
 namespace Web.DTO.Pagination
 {

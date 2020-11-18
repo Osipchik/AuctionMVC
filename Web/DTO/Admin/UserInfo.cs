@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Data;
+﻿using System.Collections.Generic;
+using Domain.Core;
 using Microsoft.AspNetCore.Identity;
-using Web.DTO.Lot;
 
 namespace Web.DTO.Admin
 {

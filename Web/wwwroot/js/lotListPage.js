@@ -50,4 +50,8 @@ async function loadNumber(){
 
 window.addEventListener('scroll', async () => await loadByMark(loadNumber));
 // document.addEventListener("DOMContentLoaded", loadNumber);
-loadNumber();
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadNumber();
+    console.log(123)
+}, false);

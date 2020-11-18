@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Data;
+using Domain.Core;
+using Domain.Interfaces;
+using Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Repository;
-using Repository.Interfaces;
 using Web.DTO.Admin;
 using Web.EmailSender;
 
@@ -19,7 +18,7 @@ namespace Web.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IEmailService _emailService;
+        private readonly IEmailSender<MailMessage> _emailSender;
 
         private readonly AppDbContext _context;
 
@@ -27,12 +26,12 @@ namespace Web.Controllers
             UserManager<AppUser> userManager,
             RoleManager<IdentityRole> roleManager,
             AppDbContext context,
-            IEmailService emailService)
+            IEmailSender<MailMessage> emailSender)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
-            _emailService = emailService;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
@@ -112,7 +111,7 @@ namespace Web.Controllers
         public async Task<IActionResult> SendMessage(string to, string subject, string message)
         {
             var mailMessage = new MailMessage(to, "", message, EmailTypes.Message);
-            await _emailService.Send(mailMessage, subject);
+            await _emailSender.Send(mailMessage, subject);
             
             return RedirectToAction("Panel");
         }

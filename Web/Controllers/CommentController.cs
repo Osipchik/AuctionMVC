@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
-using Data;
+using Domain.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Repository;
-using Repository.Interfaces;
-using Web.DTO;
+using Domain.Interfaces;
 using Web.DTO.Comment;
 
 namespace Web.Controllers
@@ -43,7 +39,7 @@ namespace Web.Controllers
                 return PartialView("_Comments", commentView);
             }
 
-            return NotFound();
+            return PartialView("_Comments");
         }
 
         [HttpDelete]

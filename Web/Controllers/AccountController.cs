@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Data;
+using Domain.Core;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Service.Interfaces;
 using Web.DTO.Account;
 using Web.EmailSender;
 using MailMessage = Web.EmailSender.MailMessage;
@@ -17,13 +17,15 @@ namespace Web.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IEmailService _emailService;
+        private readonly IEmailSender<MailMessage> _emailSender;
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailService emailService)
+        public AccountController(UserManager<AppUser> userManager, 
+            SignInManager<AppUser> signInManager,
+            IEmailSender<MailMessage> emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _emailService = emailService;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
@@ -68,7 +70,7 @@ namespace Web.Controllers
                 Request.Scheme);
                     
             var message = new MailMessage(user.Email, user.UserName.Split('@')[0], callBackUrl, EmailTypes.ConfirmEmail);
-            await _emailService.Send(message);
+            await _emailSender.Send(message);
         }
 
         [HttpGet]
@@ -110,11 +112,8 @@ namespace Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string returnUrl)
         {
-            var loginViewModel = new LoginViewModel
-            {
-                ReturnUrl = returnUrl,
-                ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList()
-            };
+            var loginViewModel = new LoginViewModel();
+            await SetExternal(loginViewModel, returnUrl);
             
             return View(loginViewModel);
         }
@@ -133,7 +132,9 @@ namespace Web.Controllers
                 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
-
+            
+            await SetExternal(model, model.ReturnUrl);
+            
             return View(model);
         }
 
@@ -222,6 +223,12 @@ namespace Web.Controllers
             }
 
             return user;
+        }
+
+        private async Task SetExternal(LoginViewModel model, string url)
+        {
+            model.ReturnUrl = url;
+            model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
     }
 }

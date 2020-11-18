@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Data;
+using Domain.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 
@@ -15,7 +14,6 @@ namespace Web
             UserManager<AppUser> userManager,
             RoleManager<IdentityRole> roleManager)
         {
-
             await InitialRoles(configuration, roleManager);
             await UserEnsureCreated(configuration, userManager);
         }

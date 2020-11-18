@@ -13,6 +13,6 @@ namespace Web.DTO.Lot
 
         public CreateLotModel() { }
         
-        public CreateLotModel(Data.Lot lot) : base(lot) { }
+        public CreateLotModel(Domain.Core.Lot lot) : base(lot) { }
     }
 }

@@ -1,14 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Data;
+using Domain.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace Web
 {
@@ -46,10 +45,10 @@ namespace Web
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                // .UseSerilog((hostingContext, loggerConfig) =>
-                // {
-                //     loggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
-                // })
+                .UseSerilog((hostingContext, loggerConfig) =>
+                {
+                    loggerConfig.ReadFrom.Configuration(hostingContext.Configuration);
+                })
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }

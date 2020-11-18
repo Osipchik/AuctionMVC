@@ -1,19 +1,16 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
-using Data;
+using Domain.Core;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Repository;
-using Repository.Interfaces;
-using Service;
-using Service.Interfaces;
-using Web.DTO;
+using Domain.Interfaces;
+using Infrastructure.Data.SortOptions;
 using Web.DTO.Lot;
 using Web.EmailSender;
 using MailMessage = Web.EmailSender.MailMessage;
@@ -22,21 +19,21 @@ namespace Web.Controllers
 {
     public class LotController: Controller
     {
-        private readonly ILotRepository _repository;
+        private readonly ILotRepository<SortBy, ShowOptions> _repository;
         private readonly ICloudStorage _cloudStorage;
-        private readonly IEmailService _emailService;
+        private readonly IEmailSender<MailMessage> _emailSender;
         private readonly UserManager<AppUser> _userManager;
         private readonly ICategoryRepository _categoryRepository;
         
-        public LotController(ILotRepository repository,
+        public LotController(ILotRepository<SortBy, ShowOptions> repository,
             ICloudStorage cloudStorage, 
-            IEmailService emailService, 
+            IEmailSender<MailMessage> emailSender, 
             UserManager<AppUser> userManager, 
             ICategoryRepository categoryRepository)
         {
             _repository = repository;
             _cloudStorage = cloudStorage;
-            _emailService = emailService;
+            _emailSender = emailSender;
             _userManager = userManager;
             _categoryRepository = categoryRepository;
         }
@@ -109,7 +106,9 @@ namespace Web.Controllers
                 
                 return RedirectToAction("Get", new {lotId});
             }
-
+            var categories = await _categoryRepository.GetAll();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
+            
             return View(model);
         }
         
@@ -117,10 +116,9 @@ namespace Web.Controllers
         {
             lot.Title = model.Title;
             lot.Description = model.Description;
-            lot.LunchAt = model.LunchAt.ToUniversalTime();
             lot.EndAt = model.EndAt.ToUniversalTime();
             lot.CategoryId = model.CategoryId;
-            lot.Goal = model.Goal;
+            lot.MinPrice = model.MinPrice;
             lot.Story = model.Story;
         }
 
@@ -135,9 +133,12 @@ namespace Web.Controllers
             {
                 await _cloudStorage.DeleteFileAsync(lot.ImageUrl);
             }
+
+            await using var memoryStream = new MemoryStream();
+            await image.CopyToAsync(memoryStream);
             
-            var filename = _cloudStorage.CreateFileName(image, HttpContext.UserId());
-            lot.ImageUrl = await _cloudStorage.UploadFileAsync(image, filename);
+            var filename = _cloudStorage.CreateFileName(image.FileName, HttpContext.UserId());
+            lot.ImageUrl = await _cloudStorage.UploadFileAsync(memoryStream, filename, image.ContentType);
         }
 
         [HttpPost]
@@ -149,6 +150,7 @@ namespace Web.Controllers
 
             if (lot != null)
             {
+                await _cloudStorage.DeleteFileAsync(lot.ImageUrl);
                 await _repository.Delete(lot);
             }
             
@@ -174,16 +176,9 @@ namespace Web.Controllers
                 }
             }
             
-            
-            // var errorViewModel = new NotfoundErrorViewModel
-            // {
-            //     Message = $"Lot with Id {lotId} not found"
-            // };
-
             ViewBag.Message = $"Lot with Id {lotId} not found";
 
             return View("ErrorPage");
-            // return RedirectToAction("NotFoundError", "Home", errorViewModel);
         }
 
         [HttpPost]
@@ -202,8 +197,9 @@ namespace Web.Controllers
             if (lot != null && IsLotReady(lot))
             {
                 lot.IsAvailable = true;
+                lot.LunchAt = DateTime.UtcNow;
                 await _repository.Update(lot);
-
+            
                 BackgroundJob.Schedule(
                     () => SendFinishedNotification(lotId),
                     lot.EndAt - DateTime.UtcNow
@@ -212,21 +208,21 @@ namespace Web.Controllers
                 return Ok();
             }
             
-            return BadRequest();
+            return Accepted();
         }
 
-        private async Task SendLaunchNotification(int id)
+        public async Task SendLaunchNotification(int id)
         {
             var lot = await _repository.Find(id);
             if (lot != null)
             {
                 var user = await _userManager.FindByIdAsync(lot.AppUserId);
-                await _emailService.Send(new MailMessage(user.Email, user.UserName, $"{lot.Title} is successfully started",
+                await _emailSender.Send(new MailMessage(user.Email, user.UserName, $"{lot.Title} is successfully started",
                     EmailTypes.LaunchNotification));
             }
         }
 
-        private async Task SendFinishedNotification(int id)
+        public async Task SendFinishedNotification(int id)
         {
             var lot = await _repository.Find(id);
             if (lot != null)
@@ -234,20 +230,26 @@ namespace Web.Controllers
                 lot.IsAvailable = false;
                 await _repository.Update(lot);
                 await _repository.LoadRates(lot);
-                var maxRate = lot.Rates[0];
 
-                var betOwner = await _userManager.FindByIdAsync(maxRate?.AppUserId);
                 var user = await _userManager.FindByIdAsync(lot.AppUserId);
+                var message = $"{lot.Title} is finished!\n";;
+                
+                if (lot.Rates.Count > 0)
+                {
+                    var maxRate = lot.Rates[0];
 
-                var message = $"{lot.Title} is finished!\n";
-                
-                message += betOwner == null 
-                    ? "Unfortunately, no one users made a bets"
-                    : $"{betOwner.UserName.Split('@')[0]} made the max bet: " +
-                      $"{lot.Rates.OrderByDescending(c => c.CreatedAt).First().Amount}";
-                
-                
-                await _emailService.Send(new MailMessage(user.Email, user.UserName, message, EmailTypes.FinishNotification));
+                    var betOwner = await _userManager.FindByIdAsync(maxRate.AppUserId);
+                    message += betOwner == null 
+                        ? "Unfortunately, bet owner delete account"
+                        : $"{betOwner.UserName.Split('@')[0]} made the max bet: " +
+                          $"{lot.Rates.OrderByDescending(c => c.CreatedAt).First().Amount}";
+                }
+                else
+                {
+                    message += "Unfortunately, no one users made a bets";
+                }
+
+                await _emailSender.Send(new MailMessage(user.Email, user.UserName, message, EmailTypes.FinishNotification));
             }
         }
 
@@ -260,7 +262,7 @@ namespace Web.Controllers
                 .Select(i => (string) i.GetValue(model))
                 .Any(string.IsNullOrEmpty);
 
-            var isDateValid = model.LunchAt > DateTime.UtcNow || model.EndAt <= model.LunchAt.AddHours(4);
+            var isDateValid = model.EndAt >= DateTime.UtcNow.AddHours(1);
 
             return !isAnyEmpty && isDateValid;
         }

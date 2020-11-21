@@ -18,7 +18,7 @@ namespace Web
             await UserEnsureCreated(configuration, userManager);
         }
         
-        private static async Task InitialRoles(IConfiguration configuration, RoleManager<IdentityRole> roleManager)
+        public static async Task InitialRoles(IConfiguration configuration, RoleManager<IdentityRole> roleManager)
         {
             var roles = configuration.GetRoles();
             foreach (var i in roles)

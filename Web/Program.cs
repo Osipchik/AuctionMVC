@@ -13,11 +13,11 @@ namespace Web
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            await InitializeDb(host);
-            await host.RunAsync();
+            //await InitializeDb(host);
+            host.Run();
         }
 
         

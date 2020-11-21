@@ -6,6 +6,7 @@ using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Web.DTO.Account;
 using Web.EmailSender;
 using MailMessage = Web.EmailSender.MailMessage;
@@ -18,14 +19,19 @@ namespace Web.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailSender<MailMessage> _emailSender;
+        private readonly IConfiguration _configuration;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public AccountController(UserManager<AppUser> userManager, 
             SignInManager<AppUser> signInManager,
-            IEmailSender<MailMessage> emailSender)
+            IEmailSender<MailMessage> emailSender,
+            IConfiguration configuration, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _configuration = configuration;
+            _roleManager = roleManager;
         }
 
         [HttpGet]
@@ -127,6 +133,8 @@ namespace Web.Controllers
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
                 if (result.Succeeded)
                 {
+                    await SuperAdminEnsureCreate(model.Email);
+                    
                     return RedirectToAction("Index", "Home");
                 }
                 
@@ -229,6 +237,16 @@ namespace Web.Controllers
         {
             model.ReturnUrl = url;
             model.ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+        }
+
+        private async Task SuperAdminEnsureCreate(string email)
+        {
+            if (!_userManager.Users.Any())
+            {
+                await DbInit.InitialRoles(_configuration, _roleManager);
+                var user = await _userManager.FindByEmailAsync(email);
+                await _userManager.AddToRolesAsync(user, _configuration.GetRoles());
+            }
         }
     }
 }

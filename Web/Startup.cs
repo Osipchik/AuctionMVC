@@ -32,15 +32,20 @@ namespace Web
         public void ConfigureServices(IServiceCollection services)
         {
             var dbConnectionString = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(dbConnectionString));
-            services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
-            services.AddHangfireServer();
+
             // services.AddDbContext<AppDbContext>(options =>
             // {
-            //     options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("Web"));
+            //     options.UseSqlServer(dbConnectionString);
             // });
+            services.AddDbContext<AppDbContext>(options =>
+            {
+                options.UseSqlServer(dbConnectionString, b => b.MigrationsAssembly("Web"));
+            });
 
-            
+            services.AddHangfire(i => i.UseSqlServerStorage(dbConnectionString));
+            services.AddHangfireServer();
+
+
             services.AddMarkdown();
             services.AddAntiforgery(x => x.HeaderName = "X-ANTI-FORGERY-TOKEN");
             

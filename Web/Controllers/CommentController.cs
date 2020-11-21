@@ -27,7 +27,6 @@ namespace Web.Controllers
 
             if (comments.Count != 0)
             {
-                // var commentsVm = comments.Select(_mapper.Map<Comment, CommentViewModel>).ToList();
                 var commentView = new CommentsView
                 {
                     Comments = comments,

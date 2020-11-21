@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Этот файл используется процессом публикации или упаковки вашего веб-проекта. Можно настроить поведение этого процесса,
+изменив этот файл MSBuild. Подробности см. на странице https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAa2MpiGVx4UCjSkBg4qfMWgAAAAACAAAAAAAQZgAAAAEAACAAAADsaLO3rvmcKPIglrL230dkkcE6AxBORtsx5DaIWYlAfgAAAAAOgAAAAAIAACAAAADLflSIFiJOXq2F6Sgtx6bGEJIlEZVAogrT19c3ytw6M4AAAADDxGShk35CjIz1qzS7E6PHneh2l8Yzz+GhhUWqZ83To5Tg7oUP3/WPUW8UCXsgQTXsKVIRBWNOM5lK2AGz0PIWXrBFtSuHfxMoxti15cP2+wWkJVUsgLXDRHJkKbCgrcoXtrn4q5AnaChg/lI8dn1o3c2qFKe0hOeueNI5BrHV50AAAACL34x9xX3vgLPwouLbG0FIREDBSDRygqvj6ShNgjcppqHvHS3YrBhscXIv9DYLxjyf35zquXqa8oRwAZrs1Itu</EncryptedPassword>
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Data Source=tcp:web-lab-db-server.database.windows.net,1433%3bInitial Catalog=Web_db%3bUser Id=razanchik%40web-lab-db-server%3bPassword=Pa7ll47mal927</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+  <ItemGroup>
+    <EFMigrations Include="Infrastructure.Data.AppDbContext">
+      <Value>Data Source=tcp:web-lab-db-server.database.windows.net,1433%3bInitial Catalog=Web_db%3bUser Id=razanchik%40web-lab-db-server%3bPassword=Pa7ll47mal927</Value>
+    </EFMigrations>
+  </ItemGroup>
+</Project>

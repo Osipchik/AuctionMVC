@@ -28,7 +28,8 @@ namespace Domain.Core
         [DataType(DataType.DateTime)]
         public DateTime EndAt { get; set; }
         
-        [RegularExpression("^[0-9]+")]
+        [DataType(DataType.Currency)]
+        [Range(0, 10_000)]
         public decimal MinPrice { get; set; }
         
         public int CategoryId { get; set; }
@@ -41,5 +42,7 @@ namespace Domain.Core
         public AppUser AppUser { get; set; }
         
         public bool IsAvailable { get; set; }
+        
+        public string JobId { get; set; }
     }
 }

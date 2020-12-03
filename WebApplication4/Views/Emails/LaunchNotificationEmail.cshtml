@@ -1,0 +1,13 @@
+﻿@model WebApplication4.EmailSender.MailMessage
+
+@{
+    Layout = "_EmailLayoutHtml";
+    ViewContext.ViewData["EmailTitle"] = "Trades started!";
+}
+
+<p class="t-24" id="name">Hey @Model.Name!</p>
+
+<div class="pt-3 mb-3 text-center">
+    @Model.Message
+</div>
+    

@@ -14,17 +14,17 @@ namespace Infrastructure.Data
     {
         public LotRepository(AppDbContext context) : base(context) { }
 
-        public async Task<Lot> Find(int lotId, string userId, bool isAdmin)
+        public async Task<Lot> Find(int lotId, string userId, bool isAdmin, int timezoneOffset = 0)
         {
             var lot = await Find(lotId);
             var isValid = lot?.AppUserId == userId || isAdmin;
             
-            return isValid ? lot : null;
+            return isValid ? CreateLotView(lot, timezoneOffset) : null;
         }
 
-        public async Task<IEnumerable<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip)
+        public async Task<IEnumerable<Lot>> FindRange(IQueryable<Lot> queryable, int take, int skip, int timezoneOffset = 0)
         {
-            return await queryable.Skip(skip).Take(take).ToListAsync();
+            return await queryable.Skip(skip).Take(take).Select(i => CreateLotView(i, timezoneOffset)).ToListAsync();
         }
 
         private IQueryable<Lot> Order(SortBy sortBy, Expression<Func<Lot, bool>> expression = null)
@@ -90,5 +90,11 @@ namespace Infrastructure.Data
         //
         //     return lotView;
         // }
+
+        private static Lot CreateLotView(Lot lot, int timezoneOffset = 0)
+        {
+            lot.EndAt = lot.EndAt.AddMinutes(timezoneOffset);
+            return lot;
+        }
     }
 }

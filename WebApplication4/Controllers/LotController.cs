@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -242,30 +243,50 @@ namespace WebApplication4.Controllers
             var lot = await _repository.Find(id);
             if (lot != null)
             {
-                lot.IsAvailable = false;
                 await _repository.Update(lot);
                 await _repository.LoadRates(lot);
 
-                var user = await _userManager.FindByIdAsync(lot.AppUserId);
-                var message = $"{lot.Title} is finished!\n";;
-                
-                if (lot.Rates.Count > 0)
-                {
-                    var maxRate = lot.Rates[0];
+                var messages = await CreateMessages(lot);
 
-                    var betOwner = await _userManager.FindByIdAsync(maxRate.AppUserId);
-                    message += betOwner == null 
-                        ? "Unfortunately, bet owner delete account"
-                        : $"{betOwner.UserName.Split('@')[0]} made the max bet: " +
-                          $"{lot.Rates.OrderByDescending(c => c.CreatedAt).First().Amount}";
+                foreach (var message in messages)
+                {
+                    await _emailSender.Send(message);
+                }
+            }
+        }
+
+        public async Task<List<MailMessage>> CreateMessages(Lot lot)
+        {
+            var user = await _userManager.FindByIdAsync(lot.AppUserId);
+            var messages = new List<MailMessage>
+            {
+                new MailMessage(user.Email, user.UserName, $"{lot.Title} is finished!\n", EmailTypes.FinishNotification)
+            };
+            
+            if (lot.Rates.Count > 0)
+            {
+                var maxRate = lot.Rates.OrderByDescending(c => c.CreatedAt).First();
+                
+                var betOwner = await _userManager.FindByIdAsync(maxRate.AppUserId);
+
+                if (betOwner != null)
+                {
+                    messages[0].Message += $"{betOwner.UserName.Split('@')[0]} has made the max bet: " +
+                                           $"{maxRate.Amount}";
+                    
+                    messages.Add(new MailMessage(betOwner.Email, betOwner.UserName, lot.Id.ToString(), EmailTypes.WinNotification));
                 }
                 else
                 {
-                    message += "Unfortunately, no one users made a bets";
+                    messages[0].Message += "Unfortunately, the bet owner has deleted the account";
                 }
-
-                await _emailSender.Send(new MailMessage(user.Email, user.UserName, message, EmailTypes.FinishNotification));
             }
+            else
+            {
+                messages[0].Message += "Unfortunately, no one user has made a bets";
+            }
+
+            return messages;
         }
 
         public async Task DeleteLot(int lotId)
@@ -284,7 +305,7 @@ namespace WebApplication4.Controllers
                 .Select(i => (string) i.GetValue(model))
                 .Any(string.IsNullOrEmpty);
 
-            var isDateValid = model.EndAt >= DateTime.UtcNow.AddHours(1);
+            var isDateValid = model.EndAt >= DateTime.UtcNow.AddMinutes(5);
 
             return !isAnyEmpty && isDateValid;
         }

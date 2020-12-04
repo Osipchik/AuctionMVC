@@ -22,8 +22,8 @@ namespace WebApplication4.EmailSender
             return message.EmailType switch
             {
                 EmailTypes.ConfirmEmail => BuildConfirmEmail(message, fromEmail),
-                EmailTypes.LaunchNotification => BuildLaunchNotification(message, fromEmail),
                 EmailTypes.FinishNotification => BuildFinishNotification(message, fromEmail),
+                EmailTypes.WinNotification => BuildWinNotification(message, fromEmail),
                 _ => BuildMessage(message, subject, fromEmail)
             };
         }
@@ -36,10 +36,12 @@ namespace WebApplication4.EmailSender
             return BuildEmail(message.Name, message.To, subject, body, fromEmail);
         }
         
-        private async ValueTask<MimeMessage> BuildLaunchNotification(MailMessage message, string fromEmail)
+        private async ValueTask<MimeMessage> BuildWinNotification(MailMessage message, string fromEmail)
         {
-            var subject = _configuration.GetSection("EmailSubjects")["Launch"];
-            var body = await _renderer.RenderViewToStringAsync("/Views/Emails/LaunchNotificationEmail.cshtml", message);
+            var subject = _configuration.GetSection("EmailSubjects")["Win"];
+
+            message.Message = "You won this:" + message.Message;
+            var body = await _renderer.RenderViewToStringAsync("/Views/Emails/WinNotification.cshtml", message);
 
             return BuildEmail(message.Name, message.To, subject, body, fromEmail);
         }

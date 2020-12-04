@@ -25,7 +25,7 @@
                         <div class="row justify-content-between mt-auto">
                             <div>
                                 <p class="card-text"><small class="text-muted">Category: @ViewBag.Categories[i.CategoryId]</small></p>
-                                <p class="card-text"><small class="text-muted">End at: @i.EndAt</small></p>
+                                <p class="card-text"><small class="text-muted">End at: @i.EndAt.ToString("HH:mm")</small></p>
                             </div>
                             <div>
                                 <p class="card-text"><small class="text-muted">Min bet: @i.MinPrice</small></p>

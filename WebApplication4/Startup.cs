@@ -125,7 +125,7 @@ namespace WebApplication4
 
             // app.UseCors(x => x.AllowAnyOrigin());
 
-            app.UseSerilogRequestLogging();
+            // app.UseSerilogRequestLogging();
 
             app.UseAuthentication();
             app.UseAuthorization();

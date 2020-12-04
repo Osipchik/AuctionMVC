@@ -1,0 +1,16 @@
+@model WebApplication4.EmailSender.MailMessage
+
+@{
+    Layout = "_EmailLayoutHtml";
+    ViewContext.ViewData["EmailTitle"] = "Trades finished!";
+
+    var message = Model.Message.Split(':');
+    var text = message[0];
+    var link = "https://asp-lab-app.azurewebsites.net/Lot/Get?lotId=" + message[1];
+}
+
+<p class="t-24" id="name">Hey @Model.Name!</p>
+<div class="pt-3 mb-3 text-center">
+    @text
+    <span><a href="@link">lot</a></span>
+</div>

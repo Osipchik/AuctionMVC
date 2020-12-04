@@ -1,0 +1,33 @@
+name: "Build and Deploy"
+
+on: [push, workflow_dispatch]
+
+env:
+  AZURE_WEBAPP_NAME: "asp-lab-app"
+  AZURE_WEBAPP_PACKAGE_NAME: "./published"
+  NETCORE_VERSION: "3.1.103"
+
+jobs:
+  build-and-deploy:
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@master    
+      - name: Setup .Net Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ env.NETCORE_VERSION }}
+
+      - name: Build with dotnet
+        run: |
+          dotnet build --configuration Release ./WebApplication4/WebApplication4.csproj
+      - name: dotnet publish
+        run: |
+          dotnet publish -c Release -o dotnetcorewebapp ./WebApplication4
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: './WebApplication4'

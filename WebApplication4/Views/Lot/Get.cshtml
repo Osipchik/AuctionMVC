@@ -50,8 +50,6 @@
             <p class="text-muted">rates</p>
         </div>
         <div class="page-info">
-            @DateTime.UtcNow
-            @Model.EndAt
             @{
                 var dateDif = Model.EndAt - DateTime.UtcNow;
                 if (Model.EndAt > DateTime.UtcNow)

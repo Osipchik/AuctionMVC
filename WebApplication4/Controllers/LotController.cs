@@ -97,14 +97,14 @@ namespace WebApplication4.Controllers
         {
             if (ModelState.IsValid)
             {
-                var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole), this.GetTimezoneOffset());
+                var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
                 if (lot != null)
                 {
                     var oldEndTime = lot.EndAt;
                     SetLotModel(model, lot);
                     if (oldEndTime != lot.EndAt)
                     {
-                        UpdateBackgroundJob(lot);
+                        SetBackgroundJob(lot);
                     }
                     
                     await AddImage(lot, model.Image);
@@ -123,7 +123,7 @@ namespace WebApplication4.Controllers
         {
             lot.Title = model.Title;
             lot.Description = model.Description;
-            lot.EndAt = model.EndAt.ToUniversalTime();
+            lot.EndAt = model.EndAt.AddMinutes(-this.GetTimezoneOffset()).ToUniversalTime();
             lot.CategoryId = model.CategoryId;
             lot.MinPrice = model.MinPrice;
             lot.Story = model.Story;
@@ -153,12 +153,17 @@ namespace WebApplication4.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int lotId)
         {
-            var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole), this.GetTimezoneOffset());
+            var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
 
             if (lot != null)
             {
                 await _cloudStorage.DeleteFileAsync(lot.ImageUrl);
                 await _repository.Delete(lot);
+
+                if (lot.JobId != null)
+                {
+                    BackgroundJob.Delete(lot.JobId);
+                }
             }
             
             return RedirectToAction("Index", "Home");
@@ -171,7 +176,7 @@ namespace WebApplication4.Controllers
             
             if (lot != null)
             {
-                lot.EndAt = lot.EndAt.AddMinutes(this.GetTimezoneOffset());
+                // lot.EndAt = lot.EndAt.AddMinutes(this.GetTimezoneOffset());
 
                 var isOwner = HttpContext.User.Identity.IsAuthenticated &&
                               (lot.AppUserId == HttpContext.UserId() || User.IsInRole(Constants.AdminRole));
@@ -187,7 +192,7 @@ namespace WebApplication4.Controllers
             
             ViewBag.Message = $"Lot with Id {lotId} not found";
 
-            return View("ErrorPage");
+            return NotFound();
         }
 
         [HttpPost]
@@ -205,7 +210,7 @@ namespace WebApplication4.Controllers
             var lot = await _repository.Find(lotId, HttpContext.UserId(), HttpContext.User.IsInRole(Constants.AdminRole));
             if (lot != null && IsLotReady(lot))
             {
-                UpdateBackgroundJob(lot);
+                SetBackgroundJob(lot);
                 
                 lot.IsAvailable = true;
                 lot.LunchAt = DateTime.UtcNow;
@@ -217,30 +222,26 @@ namespace WebApplication4.Controllers
             return Accepted();
         }
 
-        public void UpdateBackgroundJob(Lot lot)
+        public void SetBackgroundJob(Lot lot)
         {
             if (lot.JobId != null)
             {
                 BackgroundJob.Delete(lot.JobId);
-                var jobId = BackgroundJob.Schedule(
-                    () => SendFinishedNotification(lot.Id),
-                    lot.EndAt - DateTime.UtcNow
-                );
-                lot.JobId = jobId;
             }
+            
+            var jobId = BackgroundJob.Schedule(
+                () => OnFinishHandler(lot.Id),
+                lot.EndAt - DateTime.UtcNow
+            );
+            lot.JobId = jobId;
         }
-
-        public async Task SendLaunchNotification(int id)
+        
+        public async Task OnFinishHandler(int lotId)
         {
-            var lot = await _repository.Find(id);
-            if (lot != null)
-            {
-                var user = await _userManager.FindByIdAsync(lot.AppUserId);
-                await _emailSender.Send(new MailMessage(user.Email, user.UserName, $"{lot.Title} is successfully started",
-                    EmailTypes.LaunchNotification));
-            }
+            await SendFinishedNotification(lotId);
+            await DeleteLot(lotId);
         }
-
+        
         public async Task SendFinishedNotification(int id)
         {
             var lot = await _repository.Find(id);
@@ -270,6 +271,13 @@ namespace WebApplication4.Controllers
 
                 await _emailSender.Send(new MailMessage(user.Email, user.UserName, message, EmailTypes.FinishNotification));
             }
+        }
+
+        public async Task DeleteLot(int lotId)
+        {
+            var lot = await _repository.Find(lotId);
+            await _cloudStorage.DeleteFileAsync(lot.ImageUrl);
+            await _repository.Delete(lot);
         }
 
         private bool IsLotReady(Lot lot)

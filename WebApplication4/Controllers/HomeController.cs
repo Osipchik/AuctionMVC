@@ -51,19 +51,14 @@ namespace WebApplication4.Controllers
             }
 
             var lots = await _repository.FindRange(query, take, skip, this.GetTimezoneOffset());
-
+            // var lots = await _repository.FindRange(query, take, skip);
+            
             var categories = await _categoryRepository.GetAll();
             ViewBag.Categories = categories.ToDictionary(k => k.Id, v => v.Name);
             
             return PartialView("_LotList", lots);
         }
-        
-        
-        public IActionResult NotFoundError(NotfoundErrorViewModel model)
-        {
-            return View("404", model);
-        }
-        
+
         private IndexViewModel BuildIndexViewModel(int categoryId, SortBy sortBy,
             ShowOptions show, string search, IEnumerable<Category> categories)
         {

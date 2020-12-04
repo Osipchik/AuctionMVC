@@ -1,0 +1,10 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c6cc15d6_002D9794_002D425a_002D9a31_002Df6cd2d284328/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="LotRepoTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::DABCBE66-C843-43DA-A0E9-6EF47F606800::.NETCoreApp,Version=v3.1::XUnitTestProject.LotRepoTests&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::DABCBE66-C843-43DA-A0E9-6EF47F606800::.NETCoreApp,Version=v3.1::XUnitTestProject.RepositoryTests.Find_Test&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::DABCBE66-C843-43DA-A0E9-6EF47F606800::.NETCoreApp,Version=v3.1::XUnitTestProject.RepositoryTests.Create_Test&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::DABCBE66-C843-43DA-A0E9-6EF47F606800::.NETCoreApp,Version=v3.1::XUnitTestProject.RepositoryTests.Delete_Tes&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::DABCBE66-C843-43DA-A0E9-6EF47F606800::.NETCoreApp,Version=v3.1::XUnitTestProject.RepositoryTests.Delete_Test&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

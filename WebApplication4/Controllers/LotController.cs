@@ -184,6 +184,7 @@ namespace WebApplication4.Controllers
                 if (lot.IsAvailable || isOwner)
                 {
                     await _repository.LoadRates(lot);
+                    ViewBag.Time = lot.EndAt.AddMinutes(this.GetTimezoneOffset());
                     ViewData["UserId"] = HttpContext.UserId();
                     ViewData["Funded"] = lot.Rates?.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Amount ?? 0m;
                     return View(lot);
@@ -230,18 +231,12 @@ namespace WebApplication4.Controllers
             }
             
             var jobId = BackgroundJob.Schedule(
-                () => OnFinishHandler(lot.Id),
+                () => SendFinishedNotification(lot.Id),
                 lot.EndAt - DateTime.UtcNow
             );
             lot.JobId = jobId;
         }
-        
-        public async Task OnFinishHandler(int lotId)
-        {
-            await SendFinishedNotification(lotId);
-            await DeleteLot(lotId);
-        }
-        
+
         public async Task SendFinishedNotification(int id)
         {
             var lot = await _repository.Find(id);

@@ -19,29 +19,15 @@
                 @foreach (var role in Model.Roles)
                 {
                     <div class="custom-control custom-checkbox ml-1 mr-2">
-                        @if (role.Name == "superAdmin" && (Model.UserRoles.Contains("superAdmin") || !User.IsInRole("superAdmin")))
-                        {
-                            <input type="checkbox" class="custom-control-input" name="roles" value="@role.Name" id="@role.Id"
-                                   @(Model.UserRoles.Contains(role.Name) ? "checked=\"checked\"" : "") disabled>
-                            <label class="custom-control-label" for="@role.Id">@role.Name</label>
-                        }
-                        else
-                        {
-                            <input type="checkbox" class="custom-control-input cursor-pointer" name="roles" value="@role.Name" id="@role.Id"
-                                   @(Model.UserRoles.Contains(role.Name) ? "checked=\"checked\"" : "")>
-                            <label class="custom-control-label cursor-pointer" for="@role.Id">@role.Name</label>
-                        }
+                        <input type="checkbox" class="custom-control-input cursor-pointer" name="roles" value="@role.Name" id="@role.Id"
+                               @(Model.UserRoles.Contains(role.Name) ? "checked=\"checked\"" : "")>
+                        <label class="custom-control-label cursor-pointer" for="@role.Id">@role.Name</label>
                     </div>
                 }
                 <button type="submit" class="btn btn-primary btn-sm">Apply</button>
             </div>
         </form>
-        
-        <form class="px-3">
-            <input type="hidden" name="userId" value="@Model.User.Id" />
-            <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
-        </form>
-        
+
         <p>
             <button class="btn btn-info btn-sm" type="button" data-toggle="collapse" data-target="#collapseExample"
                     aria-expanded="false" aria-controls="collapseExample">

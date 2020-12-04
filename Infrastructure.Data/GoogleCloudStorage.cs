@@ -38,7 +38,15 @@ namespace Infrastructure.Data
         public async Task DeleteFileAsync(string imageUrl)
         {
             var filename = imageUrl.Substring(imageUrl.LastIndexOf("/") + 1);
-            await _storageClient.DeleteObjectAsync(_bucketName, filename);
+
+            try
+            {
+                await _storageClient.DeleteObjectAsync(_bucketName, filename);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public string CreateFileName(string fileName, string userId)

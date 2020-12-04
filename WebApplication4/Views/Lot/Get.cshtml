@@ -50,27 +50,27 @@
             <p class="text-muted">rates</p>
         </div>
         <div class="page-info">
-            @{
-                var dateDif = Model.EndAt - DateTime.UtcNow;
-                if (Model.EndAt > DateTime.UtcNow)
-                {
-                    if (dateDif.Days != 0)
-                    {
-                        <p class="type-28 text-secondary">@dateDif.Days</p>
-                        <p class="text-muted">days to go</p>
-                    }
-                    else
-                    {
-                        <p class="type-28 text-secondary">@dateDif.ToString(@"HH:mm")</p>
-                        <p class="text-muted">left time</p>
-                    }
-                }
-                else
-                {
-                    <p class="type-28 text-secondary">@ViewBag.Time</p>
-                    <p class="text-muted">finished</p>
-                }
-            }
+             @{
+                 var dateDif = Model.EndAt - DateTime.UtcNow;
+                 if (Model.EndAt > DateTime.UtcNow)
+                 {
+                     if (dateDif.Days != 0)
+                     {
+                         <p class="type-28 text-secondary">@dateDif.Days</p>
+                         <p class="text-muted">days to go</p>
+                     }
+                     else
+                     {
+                         <p class="type-28 text-secondary">@dateDif.ToString(@"hh\:mm")</p>
+                         <p class="text-muted">left time</p>
+                     }
+                 }
+                 else
+                 {
+                     <p class="type-28 text-secondary">@ViewBag.Time</p>
+                     <p class="text-muted">finished</p>
+                 }
+             }
 
         </div>
         @if (Model.IsAvailable && Model.EndAt > DateTime.UtcNow)

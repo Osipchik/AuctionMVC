@@ -307,7 +307,7 @@ namespace WebApplication4.Controllers
 
             var isDateValid = model.EndAt >= DateTime.UtcNow.AddMinutes(5);
 
-            return !isAnyEmpty && isDateValid;
+            return !isAnyEmpty && isDateValid && lot.MinPrice >= 1;
         }
     }
 }

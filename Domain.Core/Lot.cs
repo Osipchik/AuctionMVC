@@ -29,7 +29,7 @@ namespace Domain.Core
         public DateTime EndAt { get; set; }
         
         [DataType(DataType.Currency)]
-        [Range(0, 10_000)]
+        [Range(1, 10_000)]
         public decimal MinPrice { get; set; }
         
         public int CategoryId { get; set; }
